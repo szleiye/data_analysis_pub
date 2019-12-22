@@ -439,7 +439,7 @@ print(azip.namelist())
 
 
 
-## 列表
+## 列表 list
 
 #### 一次加入多个元素 .extend()
 
@@ -496,51 +496,11 @@ b_list.remove('foo')
 x.extend([7, 8, (2, 3)])
 ```
 
-## 循环
-
-#### for 循环中提前进入下一次迭代 continue
-
-即跳过代码块的剩余部分，直接进入下一次循环
-
-```PYTHON
-sequence = [1, 2, None, 4, None, 5]
-total=0
-for value in sequence:
-    if value is None:
-        continue
-    total += value
-```
-
-#### for 循环中提前终止循环 break
-
-break关键字用于使for循环完全退出
+#### 列表、集合以及字典的推导式
 
 ```python
-sequence = [1, 2, 0, 4, 6, 5, 2, 1]
-total_until_5 = 0
-for value in sequence:
-    if value == 5:
-        break
-    total_until_5 += value
-    
-
+[x.upper() for x in strings if len(x) > 2]
 ```
-
-#### 迭代生成整数xrange
-
-range生成整数会预先产生所有值并存在列表中，xrange返回逐个产生整数的迭代器
-
-```PYTHON
-sum=0
-for i in xrange(10000):
-    # %是求模运算符
-    if x % 3 ==0 or x % 5 == 0:
-        sum += i
-```
-
-## 
-
-
 
 ## 字典 dict
 
@@ -614,7 +574,88 @@ for word in words:
     by_letter[word[0]].append(word)
 ```
 
+## 集合 set
 
+#### 创建一个set
+
+set是由唯一元素组成的无序集
+
+```PYTHON
+# 创建方式1
+set([2, 2, 2, 1, 3, 3])
+
+# 创建方式2
+{2, 2, 2, 1, 3, 3}
+```
+
+#### set的并、交、差及对称差
+
+```PYTHON
+a | b  # 并
+a & b  # 交
+a - b  # 差
+a ^ b  # 堆成差(异或)  取出两遍不相交的部分
+```
+
+#### 判断一个集合是否另一个集合的子集
+
+```PYTHON
+a_set = {1, 2, 3, 4, 5, }
+
+{1, 2, 3}.issubset(a_set)  # 新集合是否包含于原集合
+```
+
+#### 判断一个集合是否包含另一个集合
+
+```python
+a_set.issuperset({1, 2, 3})
+```
+
+
+
+## 循环
+
+#### for 循环中提前进入下一次迭代 continue
+
+即跳过代码块的剩余部分，直接进入下一次循环
+
+```PYTHON
+sequence = [1, 2, None, 4, None, 5]
+total=0
+for value in sequence:
+    if value is None:
+        continue
+    total += value
+```
+
+#### for 循环中提前终止循环 break
+
+break关键字用于使for循环完全退出
+
+```python
+sequence = [1, 2, 0, 4, 6, 5, 2, 1]
+total_until_5 = 0
+for value in sequence:
+    if value == 5:
+        break
+    total_until_5 += value
+    
+
+```
+
+#### 迭代生成整数xrange
+
+range生成整数会预先产生所有值并存在列表中，xrange返回逐个产生整数的迭代器
+
+```PYTHON
+sum=0
+for i in xrange(10000):
+    # %是求模运算符
+    if x % 3 ==0 or x % 5 == 0:
+        sum += i
+```
+
+## 
 
 ## 内置序列函数
 
@@ -653,6 +694,74 @@ for i, (a, b) in enumerate(zip(seq1, seq2)):
 pitchers = [('Nolan', 'Ryan'), ('Roger', 'Clemens')]
 first_names, last_names = zip(*pitchers)
 ```
+
+## 函数
+
+#### 关键字参数，位置参数 *args、 **kwargs
+
+位置参数(`*args`)：被打包成元组
+
+关键字参数(`**kwargs`)：通常用于指定默认值或可选参数，**必须位于位置参数之后**，被打包成字典
+
+```PYTHON
+def say_hello_then_call_f(f, *args, **kwargs):
+    ```
+    传入args和kwargs给f这个函数，并且输出他的值和两种参数
+    ```
+    print 'args is', args
+    pring 'kwargs is', kwargs
+    print("Hello! Now I'm going to call %s" % f)
+    return f(*args, **kwargs)
+
+# 定义函数
+def g(x, y, z=1):
+    return (x+y)/z
+
+# 通过say_hello_then_call_f调用函数
+say_helle_then_call_f(g, 1, 2, z=5.)
+```
+
+
+
+#### 函数返回多个值
+
+```PYTHON
+# 以元组形式返回
+def f():
+    a = 5
+    b = 6
+    c = 7
+    return a, b, c
+
+# 以字典形式返回
+def f():
+    a = 5
+    b = 6
+    c = 7
+    return {'a':a, 'b':b, 'c':c}
+```
+
+
+
+#### 函数也可以作为对象
+
+```PYTHON
+def remove_punctuation(value):
+    return re.sub('[!#?]', '', value)  # 对字符做替换处理
+
+clean_ops = [str.strip, remove_punctuation, str.title]  # 要使用的函数列表
+
+# 将函数作为对象形式调用，提高clean_strings复用性
+def clean_strings(strings, ops):
+    result = []
+    for value in strings:
+        for function in ops:  # 调用op函数列表里面的函数
+            value = function(value)
+        result.append(value)
+    return result
+```
+
+
 
 ## 异常处理
 
