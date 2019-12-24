@@ -705,7 +705,7 @@ first_names, last_names = zip(*pitchers)
 
 ```PYTHON
 def say_hello_then_call_f(f, *args, **kwargs):
-    ```
+```
     传入args和kwargs给f这个函数，并且输出他的值和两种参数
     ```
     print 'args is', args
@@ -713,11 +713,11 @@ def say_hello_then_call_f(f, *args, **kwargs):
     print("Hello! Now I'm going to call %s" % f)
     return f(*args, **kwargs)
 
-# 定义函数
+#### 定义函数
 def g(x, y, z=1):
     return (x+y)/z
 
-# 通过say_hello_then_call_f调用函数
+#### 通过say_hello_then_call_f调用函数
 say_helle_then_call_f(g, 1, 2, z=5.)
 ```
 
@@ -725,7 +725,7 @@ say_helle_then_call_f(g, 1, 2, z=5.)
 
 #### 函数返回多个值
 
-```PYTHON
+​```PYTHON
 # 以元组形式返回
 def f():
     a = 5
@@ -959,6 +959,14 @@ a.unique()
 a.drop_duplicates()
 ```
 
+#### 去重保留最后一条 dataframe.drop_duplicates(take_last=True)
+
+`dataframe.drop_duplicates(take_last=True)`
+
+```PYTHON
+data.drop_duplicates(['k1', 'k2'], take_last=True)
+```
+
 #### 查看列名 .columns
 
 ```PYTHON
@@ -981,7 +989,21 @@ Only consider certain columns for identifying duplicates, by default use all of 
 dt_pbcc_wide_tb_basic_info[dt_pbcc_wide_tb_basic_info.duplicated(subset=['rid'], keep=False)].head()
 ```
 
+#### 返回两列id的交集 np.intersect1d()
 
+`np.intersect1d`
+
+```python
+np.intersect1d(movies.movieId.unique(), links.movieId.unique())
+```
+
+#### 检查去重后的id数量
+
+```python
+print(len(movies.movieId.unique()))
+```
+
+#### 
 
 ## 索引和列属性
 
@@ -1042,7 +1064,22 @@ frame.reindex(columns=['Texas','Utah','California'])
 
 ```
 
+#### 重命名索引 `dataframe.index.map()` `datafram.index.rename()`
+
+```PYTHON
+# 也可以用map方法
+data.index.map(str.upper)
+
+# rename则是复制一份数据集，不在原df上做修改
+data.rename(index=str.title, columns=str.upper)
+
+# rename可以结合紫癜性对象实现对部分轴标签的更新
+data.rename(index={'OHIO': 'INDIANA'}, columns={'three', 'peekaboo'})
+```
+
 #### 
+
+
 
 ## 数据类型
 
@@ -1138,19 +1175,123 @@ DataFrame.select_dtypes(*self*, *include=None*, *exclude=None*)
 
 ## 数据操作
 
+#### 删除列或行 .drop
+
+```PYTHON
+# 删除行
+obj.drop(['d','c'])
+# 删除列
+data.drop(['two','four'],axis=1)
+```
+
 #### 取值映射 .map()
 
 ```PYTHON
 dec.cand_nm[123456:123461].map(parties)  # parties是一个映射字典
+
+animal={'aa':'pig','bb':'dog','cc':'horse','dd':'dog','ee':'pig','ff':'dog','gg':'horse'}
+#data['animal']=data['food'].map(animal)
+data['animal']=data['food'].map(lambda x:animal[x])
 ```
+
+#### .replace() 替换数据
+
+```PYTHON
+dt_loan.first_loan_month.replace({'--': np.nan}, inplace=True)
+
+# 结合字典完成映射
+data = (
+  pd.read_excel(path).fillna("")
+    .sort_values(["code"])
+    .assign(loc = lambda df: df["loc"].replace(dict_loc))
+       )
+```
+
+#### 全局修改dataframe数据 [pandas.DataFrame.replace](<https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html>) 
+
+```PYTHON
+# overall replace
+df.replace(to_replace='Female', value='Sansa', inplace=True)
+
+# dict replace
+df.replace({'sex': {'Female': 'Sansa', 'Male': 'Leone'}}, inplace=True)
+
+# replace on where condition 
+df.loc[df.sex == 'Male', 'sex'] = 'Leone'
+```
+
+#### 设定指定的值
+
+```PYTHON
+data[np.abs(data) > 3] = np.sign(data)*3
+```
+
+
+
+#### 连续变量分段 pd.cut()
+
+| 参数      | 说明 |
+| --------- | ---- |
+| right     |      |
+| labels    |      |
+| precision |      |
+
+```PYTHON
+# 指定分段，默认左开右闭
+bins = [18, 25, 35, 60, 100]
+cats = pd.cut(ages, bins)
+
+# 指定分段标签
+group_names = ['Youth', 'YoungAdult', 'MiddleAged', 'Senior']
+pd.cut(ages, bins, labels=group_names)
+
+# 查看分段的label和level属性
+cats.labels
+cats.levels
+```
+
+#### 按分位数分段 pd.qcut()
+
+```python
+# 按4分位数进行切割
+cats = pd.qcut(data, 4)
+
+# 设置自定义的分位数
+pd.qcut(data, [0, 0.1, 0.5, 0.9, 1])
+```
+
+
 
 ## 数据操作-切片
 
 ### [Indexing and Selecting Data](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>)
 
-.loc: selection by label
+主要有三种方法
 
-.iloc: selection by integer position
+* .loc: selection by label
+
+* .iloc: selection by integer position
+
+* []
+
+#### 通过[]方式取切片
+
+```PYTHON
+# 交换A,B两列的值
+df[['B', 'A']] = df[['A', 'B']]
+
+# 以下方式不能起到交换作用，因为loc在指定值之前先对齐列
+df.loc[:, ['B', 'A']] = df[['A', 'B']]
+df.loc[:, ['B', 'A']] = df[['A', 'B']].to_numpy()  # 正确的方法
+```
+
+#### 给某一行赋值
+
+```PYTHON
+ x.iloc[1] = {'x': 9, 'y': 99}
+```
+
+
 
 #### [用callable进行切片](<https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-callable>)
 
@@ -1212,6 +1353,14 @@ df[~df.a.isin(df.b)]
 df.query('b == ["a", "b", "c"]')
 df[df.b.isin(["a", "b", "c"])]
 ```
+
+#### 选取任意超过x的值 df.any(1)
+
+```python
+data[(np.abs(col)>3).any(1)]
+```
+
+
 
 ## 数据操作-聚合和分组运算
 
@@ -1426,38 +1575,7 @@ bucker_sums = grouped.contb_receipt_amt.sum().unstack(0) # 统计分组金额
 normed_sums = bucker_sums.div(bucket_sums.sum(axis=1), axis=0)
 ```
 
-
-
-## 数据操作-其他
-
-#### .drop 删除列或行
-
-```PYTHON
-# 删除行
-obj.drop(['d','c'])
-# 删除列
-data.drop(['two','four'],axis=1)
-```
-
-#### 纵向合并数据集
-
-[pandas.DataFrame.append](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.append.html)
-
-[pandas.concat](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.concat.html#pandas.concat) 
-
-#### 检查去重后的id数量
-
-```python
-print(len(movies.movieId.unique()))
-```
-
-#### 返回两列id的交集
-
-`np.intersect1d`
-
-```python
-np.intersect1d(movies.movieId.unique(), links.movieId.unique())
-```
+## 数据操作-连接
 
 #### 连接表
 
@@ -1496,9 +1614,7 @@ pd.merge(left, right, on=['key1,'key2], how='outer')
 pd.merge(left,right,left_on=['key1','key2'], right_index=True)
 ```
 
-
-
-##### `join` 默认按索引合并
+#### 默认按索引合并`dataframe.join()` 
 
 [pandas.DataFrame.join](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.join.html)
 
@@ -1513,11 +1629,35 @@ caller.set_index('key').join(other.set_index('key'))
 caller.join(other.set_index('key'), on='key')
 ```
 
-##### `pd.concat` 轴向连接
+#### 轴向连接 `pd.concat()`
 
 [pandas.concat](http://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.concat.html)
 
-```python
+直接将两个dataframe或者series进行纵向连接或者横向连接
+
+| 参数             | 说明                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| objs             | 参与连接的series, dict, dataframe                            |
+| axis             | 连接方向 {0 index, 1 columns}                                |
+| join             | {‘inner’, ‘outer’}, default ‘outer’                          |
+| join_axes        | list of Index objects  <br> Specific indexes to use for the other n - 1 axes instead of performing inner/outer set logic <br> 指定其他轴上面参与连接的索引 |
+| ignore_index     | 不保留原连接轴上的索引，用一组新索引代替                     |
+| keys             | 用于形成层次化索引                                           |
+| levels           | 设置了kets的情况下，指定层次化索引的level                    |
+| names            | 设置层次化索引的名称                                         |
+| verify_integrity | 检查结果对象新轴上的重复情况                                 |
+| sort             | Sort non-concatenation axis if it is not already aligned when join is ‘outer’. The current default of sorting is deprecated and will change to not-sorting in a future version of pandas. |
+
+```PYTHON
+# 在连接轴上创建层次化索引来区分连接的对象
+result = pd.concat([s1, s2, s3], keys=['one', 'two', 'three'])
+
+# 通过传入字典也能实现层次化索引
+pd.concat({'level1': df1, 'level2': df2}, axis=1)
+
+# 通过ignore_index实现忽略索引直接合并
+pd.concat([df1, df2], ignore_index=True)
+
 # 纵向连接3个series
 pd.concat([s1,s2,s3])
 pd.concat([df1,df2],ignore_index=True)
@@ -1531,32 +1671,15 @@ pd.concat([s1,s2,s3], keys=['one','two','three'])
 pd.concat([df1,df2],axis=1,keys=['level1','level2'])
 ```
 
+#### 纵向合并数据集
 
+[pandas.DataFrame.append](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.append.html)
 
-#### .replace() 替换数据
-
-```PYTHON
-dt_loan.first_loan_month.replace({'--': np.nan}, inplace=True)
-
-# 结合字典完成映射
-data = (
-  pd.read_excel(path).fillna("")
-    .sort_values(["code"])
-    .assign(loc = lambda df: df["loc"].replace(dict_loc))
-       )
-```
+[pandas.concat](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.concat.html#pandas.concat) 
 
 
 
-#### .map()映射数据
-
-```PYTHON
-animal={'aa':'pig','bb':'dog','cc':'horse','dd':'dog','ee':'pig','ff':'dog','gg':'horse'}
-#data['animal']=data['food'].map(animal)
-data['animal']=data['food'].map(lambda x:animal[x])
---------------------- 
-原文：https://blog.csdn.net/castinga3t/article/details/79015054 
-```
+## 数据操作-排序
 
 #### [DataFrame.sort_values 排序](http://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sort_values.html)
 
@@ -1578,19 +1701,6 @@ dt_query_info.sort_index(inplace=True, axis=1)
 ```
 
 
-
-#### [pandas.DataFrame.replace](<https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html>) 全局修改dataframe数据
-
-```PYTHON
-# overall replace
-df.replace(to_replace='Female', value='Sansa', inplace=True)
-
-# dict replace
-df.replace({'sex': {'Female': 'Sansa', 'Male': 'Leone'}}, inplace=True)
-
-# replace on where condition 
-df.loc[df.sex == 'Male', 'sex'] = 'Leone'
-```
 
 #### 类似sql的case when 操作
 
@@ -1652,7 +1762,25 @@ def is_local(address, org, dict):
     return mark
 ```
 
+#### 拆分字符串并转换成list
 
+```PYTHON
+def to_cat_list(catstr):
+    stripped = (x.strip() for x in catstr.split(','))
+    return [x for x in stripped if x]
+```
+
+#### 字符先转小写再映射
+
+```PYTHON
+# 方法1
+data['animal'] = data['food'].map(str.lower).map(meat_to_animal)  # meat_to_animal是一个映射字典
+
+# 方法2
+data['food'].map(lambda x: meat_to_animal[x.lower()])
+```
+
+#### 
 
 ## 日期计算
 
@@ -2051,7 +2179,108 @@ Out[114]: (1,2)
 
 # matplotlib画图
 
-### 图存成PDF文件
+## 基础设置
+
+#### matplotlib 配置 plt.rc()
+
+```PYTHON
+# 例子1
+plt.rc('figure', figsize=(10, 10))
+
+# 例子2
+font_options = {'family':'monospace',
+                'weight':'bold',
+                'size':'small'}  # 将选项写成字典
+plt.rc('font', **font_options)  # 然后将字典传入
+```
+
+
+
+#### 调整subplot周围的间距 plt.subplots_adjust()
+
+```python
+fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
+for i in range(2):
+    for j in range(2):
+        axes[i, j].hist(randn(500), bins=50, color='k', alpha=0.5)
+plt.subplots_adjust(wspace=0, hspace=0)
+```
+
+#### 调整x轴坐标
+
+```python
+# 设置x轴标签大小
+plt.tick_params(axis='x', labelsize=8)    
+
+# 旋转x轴坐标
+plt.xticks(rotation=-15)    
+```
+
+#### 子图重叠
+
+```PYTHON
+plt.tight_layout()
+```
+
+#### 双坐标轴
+
+```PYTHON
+ax2 = ax1.twinx()
+```
+
+#### 设置刻度、标签和图例
+
+大部分的图标装饰项可以通过以下两种方式实现：
+
+* 过程型的pyplot接口
+* 面向对象的原生matplotlib API (推荐)
+
+#### 设置坐标轴范围 ax.set_xlim()
+
+```PYTHON
+# 通过pyplot接口
+plt.xlim()  # 没有给参数，则返回当前图像的坐标轴范围
+plt.xlim([0,10])  # 传入参数则设置坐标轴范围，仅对最近的AxesSubplot起作用
+
+# 通过subplot实例方法
+ax.get_xlim()
+ax.set_xlim()
+```
+
+#### 设置刻度标签 ax.set_xticks() / ax.set_xticklabels()
+
+```python
+ax.set_xticks([0, 250, 500, 750, 1000])  # set_xticks设置要修改坐标标签的位置
+ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation=30, fontsize='small')  # 根据上一行的位置设置对应的标签
+```
+
+#### 设置x轴名称 ax.set_xlabel()
+
+```PYTHON
+ax.set_xlabel('Stages')
+```
+
+#### 设置标题 ax.set_title()
+
+```python
+ax.set_title('aaa')
+```
+
+#### 添加图例 ax.legend()
+
+```PYTHON
+# 方法1：添加subplot时候传入label参数
+ax.plot(randn(1000).cumsum(), 'k', label='one')
+
+# 方法2：调用ax.legend()
+ax.legend(loc='best')
+```
+
+
+
+## 保存文件
+
+#### 图存成PDF文件
 
 ```PYTHON
 with PdfPages('multipage_pdf.pdf') as pdf:
@@ -2067,7 +2296,17 @@ with PdfPages('multipage_pdf.pdf') as pdf:
     plt.close()
 ```
 
-### 画各变量箱形图
+#### 将图标保存到文件 plt.savefig
+
+```python
+plt.savefig('figpath.svg')
+```
+
+
+
+## 画图
+
+#### 画各变量箱形图
 
 ```python
 def f_EDA_boxplot(df, vartype='num',
@@ -2112,7 +2351,7 @@ def f_EDA_boxplot(df, vartype='num',
     return fig
 ```
 
-### 画各变量分布图
+#### 画各变量分布图
 
 ```PYTHON
 def f_EDA_displot(df, vartype='num',
@@ -2207,7 +2446,7 @@ def f_EDA_displot(df, vartype='num',
     return fig
 ```
 
-### seaborn 画多个子图
+#### seaborn 画多个子图
 
 ```PYTHON
 f, axes = plt.subplots(1, 2, sharey=True, figsize=(6, 4))
@@ -2215,27 +2454,83 @@ sns.catplot(x="Sex", y="Survived", kind='bar',data=train_data, ax=axes[0])
 sns.catplot(x="Ticket", y="Survived",kind='bar',  data=train_data, ax=axes[1]);
 ```
 
-### 调整x轴坐标
+
+
+#### 根据二维数据画线 ax.plot(x, y)
 
 ```python
-# 设置x轴标签大小
-plt.tick_params(axis='x', labelsize=8)    
-
-# 旋转x轴坐标
-plt.xticks(rotation=-15)    
+ax.plot(x, y, linesyple='--', color='g')
 ```
 
-### 子图重叠
+
+
+
+
+##  pandas 绘图函数
+
+#### 线性图
+
+```python
+# series会画一条线
+s = Series(np.random.randn(10).cumsum(), index=np.arange(0,100,10))
+s.plot
+
+# dataframe会画很多条线，并自动创建图例
+df = DataFrame(np.random.randn(10, 4).cumsum(0), columns=['A', 'B', 'C', 'D'], index=np.arange(0, 100, 10))
+df.plot
+
+```
+
+#### 柱状图 `kind='bar'`
 
 ```PYTHON
-plt.tight_layout()
+fig, axes = plt.subplots(2, 1)  # 设定两个子图
+data = Series(np.random.rand(16), index=list('asffdsfgge'))
+
+data.plot(kind='bar', ax=axes[0], color='k', alpha=0.7)  # 在子图1画图
+data.plot(kind='barh', ax=axes[1], color='k', alpha=0.7)  # 在子图2画图
 ```
 
-### 双坐标轴
+#### 堆积柱状图 `stacked=True`
 
 ```PYTHON
-ax2 = ax1.twinx()
+df.plot(kind='barh', stacked=True, alpha=0.5)
 ```
+
+#### 直方图 `dataframe.hist(bins=)`
+
+```python
+tips['tip_pct'] = tips['tip']/tips['total_bill']
+tips['tip_pct'].hist(bins=50)
+```
+
+#### 密度图 `kind='kde'`
+
+```python
+tips['tip_pct'].plot(kind='kde')
+
+# 将直方图和密度图画在同一幅图上
+comp1 = np.random.normal(0, 1, size=200)  # N(0, 1)的正态分布
+comp2 = np.random.normal(10, 2, size=200)  # N(10, 4)的正态分布
+values = Series(np.concatenate([comp1, comp2]))
+
+values.hist(bins=100, alpha=0.3, color='k', normed=True)
+values.plot(kind='kde', style='k--')
+```
+
+#### 散点图 `plt.scatter()`
+
+```PYTHON
+plt.scatter(trans_data['m1'], trans_data['unemp'])
+```
+
+#### 散点矩阵图 `pd.scatter_matrix()`
+
+```python
+pd.scatter_matrix(trans_data, diagonal='kde', color='k', alpha=0.3)
+```
+
+
 
 
 
