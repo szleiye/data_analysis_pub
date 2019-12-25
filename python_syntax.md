@@ -283,10 +283,6 @@ a is None # 返回一个布尔值
 'Non-negative' if x >=0 else 'Negative'
 ```
 
-## 
-
-
-
 ## 其他
 
 #### 转MD5 hashlib.md5() 
@@ -655,7 +651,7 @@ for i in xrange(10000):
         sum += i
 ```
 
-## 
+ 
 
 ## 内置序列函数
 
@@ -714,18 +710,14 @@ def say_hello_then_call_f(f, *args, **kwargs):
     return f(*args, **kwargs)
 
 #### 定义函数
+```PYTHON
 def g(x, y, z=1):
     return (x+y)/z
-
-#### 通过say_hello_then_call_f调用函数
-say_helle_then_call_f(g, 1, 2, z=5.)
 ```
-
-
 
 #### 函数返回多个值
 
-​```PYTHON
+```PYTHON
 # 以元组形式返回
 def f():
     a = 5
@@ -740,8 +732,6 @@ def f():
     c = 7
     return {'a':a, 'b':b, 'c':c}
 ```
-
-
 
 #### 函数也可以作为对象
 
@@ -760,8 +750,6 @@ def clean_strings(strings, ops):
         result.append(value)
     return result
 ```
-
-
 
 ## 异常处理
 
@@ -807,12 +795,6 @@ else:
 finally:
     f.close()
 ```
-
-
-
-## 
-
-
 
 # Pandas
 
@@ -889,8 +871,6 @@ test_dict = {'id':[1,2,3,4,5,6],
 
 test=pd.DataFrame(test_dict)
 ```
-
-
 
 ## 数据描述
 
@@ -1003,7 +983,7 @@ np.intersect1d(movies.movieId.unique(), links.movieId.unique())
 print(len(movies.movieId.unique()))
 ```
 
-#### 
+
 
 ## 索引和列属性
 
@@ -1077,7 +1057,13 @@ data.rename(index=str.title, columns=str.upper)
 data.rename(index={'OHIO': 'INDIANA'}, columns={'three', 'peekaboo'})
 ```
 
-#### 
+#### 笛卡尔积生成多重索引
+
+```PYTHON
+s_mi = pd.Series(np.arange(6), index=pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']]))
+```
+
+####  
 
 
 
@@ -1260,8 +1246,6 @@ cats = pd.qcut(data, 4)
 pd.qcut(data, [0, 0.1, 0.5, 0.9, 1])
 ```
 
-
-
 ## 数据操作-切片
 
 ### [Indexing and Selecting Data](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>)
@@ -1358,6 +1342,89 @@ df[df.b.isin(["a", "b", "c"])]
 
 ```python
 data[(np.abs(col)>3).any(1)]
+```
+
+####  dataframe中不同的列是否包含不同的值 df.isin()
+
+```PYTHON
+values = {'ids': ['a', 'b'], 'vals': [1, 3]}
+df.isin(values)
+
+# 结合any() 或者 all() 实现不同的筛选
+row_mask = df.isin(values).all(1)
+```
+
+#### 复杂的切片操作
+
+```PYTHON
+df2 = pd.DataFrame({'a': ['one', 'one', 'two', 'three', 'two', 'one', 'six'],
+                    'b': ['x', 'y', 'y', 'x', 'y', 'x', 'x'],
+                    'c': np.random.randn(7)})
+
+# 建一个筛选标准
+criterion = df2['a'].map(lambda x: x.startswith('t'))
+df2[criterion]
+
+# 同时用多个标准
+df2[criterion & (df2['b'] == 'x')]
+```
+
+#### 
+
+#### [随机抽取样本 df.sample()](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html#pandas.DataFrame.sample)
+
+> **n :** int, optional
+> Number of items from axis to return. Cannot be used with frac. Default = 1 if frac = None.
+>
+> **frac :** float, optional
+> Fraction of axis items to return. Cannot be used with n.
+>
+> **replace :** bool, default False
+> Sample with or without replacement.
+>
+> **weights :** str or ndarray-like, optional
+> Default ‘None’ results in equal probability weighting. If passed a Series, will align with target object on index. Index values in weights not found in sampled object will be ignored and index values in sampled object not in weights will be assigned weights of zero. If called on a DataFrame, will accept the name of a column when axis = 0. Unless weights are a Series, weights must be same length as axis being sampled. If weights do not sum to 1, they will be normalized to sum to 1. Missing values in the weights column will be treated as zero. Infinite values not allowed.
+>
+> **random_state :** int or numpy.random.RandomState, optional
+> Seed for the random number generator (if int), or numpy RandomState object.
+>
+> **axis :** int or string, optional
+> Axis to sample. Accepts axis number or name. Default is stat axis for given data type (0 for Series and DataFrames).
+
+
+
+####  df.where()
+
+* 返回筛选结果并维持原dataframe大小
+* 可以替换dataframe中不满足条件的值
+
+| 参数    | 作用                                                        |
+| ------- | ----------------------------------------------------------- |
+| inplace | True, 不返回一个copy, 直接在原dataframe上改动               |
+| axis    | 选择要对齐的轴，当需要指定dataframe中某列或某行作为替换值时 |
+| level   | alignment level                                             |
+
+```PYTHON
+df.where(df < 0, -df)
+
+# 按行索引对齐，不符合条件的用A列的值替换
+df2.where(df2 > 0, df2['A'], axis='index')
+
+# 下面这个和上面等价，但会慢一些
+df.apply(lambda x, y: x.where(x>0, y), y=df['A'])
+```
+
+#### df.mask()
+
+df.where()的反向操作，满足条件的值要被替换掉
+
+#### query() 方法
+
+```PYTHON
+# 例子1: 取符合 a<b<c 的行 
+df[(df.a < df.b) & (df.b < df.c)]  # 传统方法
+
+
 ```
 
 
