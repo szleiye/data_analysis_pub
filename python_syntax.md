@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
 ## 数据加载
 
-### 获取当前路径
+#### 获取当前路径
 
 ```PYTHON
 import os
@@ -192,7 +192,7 @@ path1=os.path.abspath('.')
 path1=os.path.abspath('..')
 ```
 
-### 绝对路径和相对路径写法
+#### 绝对路径和相对路径写法
 
 
 我们常用`/`来表示相对路径，`\`来表示绝对路径，上面的路径里\\\是转义的意思，不懂的自行百度。
@@ -201,6 +201,15 @@ path1=os.path.abspath('..')
 open('aaa.txt')
 open('/data/bbb.txt')
 open('D:\\user\\ccc.txt')
+```
+
+#### 判断文件是否存在 os.path.isfile() 
+
+```PYTHON
+if os.path.isfile(dt_fname):
+    pass
+else:
+    data=pd.read_csv()
 ```
 
 
@@ -294,15 +303,6 @@ def md5value(s):
     return md5.hexdigest()
 ```
 
-#### 判断文件是否存在 os.path.isfile() 
-
-```PYTHON
-if os.path.isfile(dt_fname):
-    pass
-else:
-    data=pd.read_csv()
-```
-
 
 
 ## Python 字符串
@@ -384,7 +384,7 @@ b、d、o、x 分别是二进制、十进制、八进制、十六进制。
 
 ## 面向对象方法
 
-### [更新对象绑定的方法](<https://www.jb51.net/article/109409.htm>)
+#### [更新对象绑定的方法](<https://www.jb51.net/article/109409.htm>)
 
 ```PYTHON
 import types
@@ -418,7 +418,7 @@ Dog.howl = howl
 
 ## 处理压缩文件
 
-### 读取zip文件
+#### 读取zip文件
 
 ```PYTHON
 # https://blog.csdn.net/weixin_39724191/article/details/91350953
@@ -427,7 +427,7 @@ with zipfile.ZipFile('./exampleproject/_9_home_credit/data/home-credit-default-r
         installments_payments = pd.read_csv(f)
 ```
 
-### 返回压缩包内文件加名字
+#### 返回压缩包内文件加名字
 
 ```PYTHON
 print(azip.namelist())
@@ -651,7 +651,25 @@ for i in xrange(10000):
         sum += i
 ```
 
- 
+ #### 循环中添加进度提示信息  tqdm(iterator) 
+
+```PYTHON
+# tqdm(list)方法可以传入任意一种list,比如数组
+for i in tqdm(range(1000)):  
+     #do something
+     pass  
+
+for char in tqdm(["a", "b", "c", "d"]):
+    #do something
+    pass
+
+# 在for循环外部初始化tqdm,可以打印其他信息
+bar = tqdm(["a", "b", "c", "d"])
+for char in bar:
+    pbar.set_description("Processing %s" % char)
+```
+
+
 
 ## 内置序列函数
 
@@ -755,6 +773,8 @@ def clean_strings(strings, ops):
 
 #### 异常处理 try/except/else/finally
 
+ <img  src="assets/try_except_else_finally.png" alt="img" align="center"  style="zoom: 25%; " />
+
 当try中的语句发生错误时，执行except中的代码块
 
 ```PYTHON
@@ -795,6 +815,25 @@ else:
 finally:
     f.close()
 ```
+
+#### raise 触发异常
+
+ <img src="assets/raise.png" alt="img" style="zoom:33%;" /> 
+
+```PYTHON
+# 如果 x 大于 5 就触发异常
+x = 10
+if x > 5:
+    raise Exception('x 不能大于 5。x 的值为: {}'.format(x))
+```
+
+#### assert 触发异常
+
+ Python assert（断言）用于判断一个表达式，在表达式条件为 false 的时候触发异常。 
+
+<img src="assets/assert.png" alt="img" style="zoom: 33%;" align='left'/>
+
+ 
 
 # Pandas
 
@@ -1767,8 +1806,6 @@ DataFrame.sort_values(by, axis=0, ascending=True, inplace=False, kind='quicksort
 dt_query_info.sort_index(inplace=True, axis=1)
 ```
 
-
-
 #### 类似sql的case when 操作
 
 ```python
@@ -1776,6 +1813,40 @@ casewhen=lambda x: 1 if x>=0 and x<=3 else 2 if x>3 and x<=6 else 3
 print(frame['Texas'].apply(casewhen))
 
 ```
+
+####  **if-then和if-then-else逻辑实现** 
+
+```PYTHON
+
+df = pd.DataFrame(
+        {'AAA': [4,5,6,7], 'BBB': [10,20,30,40], 'CCC': [100,50,-30,-50] })
+# loc函数
+# if-then 的逻辑在某列上，【选取满足的条件的行数据，然后对指定的列赋值】
+df.loc[df.AAA >= 5, 'BBB'] = -1
+df.loc[df.AAA >= 5,['BBB','CCC']] = 555
+df.loc[df.AAA < 5,['BBB','CCC']] = 2000
+df.loc[df.AAA >= 5, 'BBB'] = df.AAA
+
+# where函数
+# 根据每个位置元素的true或false，去赋值，true原值不变，false改变
+df_mask = pd.DataFrame({'AAA' : [True] * 4, 'BBB' : [False] * 4,'CCC' : [True,False] * 2})
+# df_mask的'AAA'列全是true，'BBB'列全是false，'CCC'是true,false,true,false
+df.where(df_mask, -1000)
+Out[6]: 
+   AAA   BBB   CCC
+0    4 -1000  2000
+1    5 -1000 -1000
+2    6 -1000   555
+3    7 -1000 -1000
+# 利用numpy中的where函数,实现if-then-else逻辑
+df = pd.DataFrame(
+     {'AAA' : [4,5,6,7], 'BBB' : [10,20,30,40],'CCC' : [100,50,-30,-50]})
+# 'AAA'列如果大于5，赋值某列(新列)为high，否则赋值low
+df['logic'] = np.where(df['AAA']>5, 'high', 'low')
+
+```
+
+
 
 #### 用B表数据更新A表的值
 
