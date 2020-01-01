@@ -1044,6 +1044,39 @@ a.rename(columns={'A':'a', 'B':'b', 'C':'c'}, inplace = True)
 frame3.columns.name='state'
 ```
 
+#### 重新索引 .reindex() 
+
+```PYTHON
+# Series的reindex会根据新索引排序，如果索引不在，，传入缺失值
+obj.reindex(['a','b','c','d','e'], fill_value=0)
+
+# DataFrmame可以修改行、列索引
+frame.reindex(['a','b','c','d'])
+frame.reindex(columns=['Texas','Utah','California'])
+
+```
+
+#### 重命名索引 dataframe.index.map()  dataframe.index.rename()
+
+```PYTHON
+# 也可以用map方法
+data.index.map(str.upper)
+
+# rename则是复制一份数据集，不在原df上做修改
+data.rename(index=str.title, columns=str.upper)
+
+# rename可以结合紫癜性对象实现对部分轴标签的更新
+data.rename(index={'OHIO': 'INDIANA'}, columns={'three', 'peekaboo'})
+```
+
+#### 笛卡尔积生成多重索引 pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']])
+
+```PYTHON
+s_mi = pd.Series(np.arange(6), index=pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']]))
+```
+
+### 多重索引
+
 #### 修改多层索引名称
 
 ```PYTHON
@@ -1071,38 +1104,34 @@ gp2.columns = gp1.columns.droplevel(0)
 gp3.columns = ["_".join(x) for x in gp3.columns.ravel()]
 ```
 
-#### 重新索引 .reindex() 
+#### 多重索引交换层级 df.swaplevel()
 
 ```PYTHON
-# Series的reindex会根据新索引排序，如果索引不在，，传入缺失值
-obj.reindex(['a','b','c','d','e'], fill_value=0)
-
-# DataFrmame可以修改行、列索引
-frame.reindex(['a','b','c','d'])
-frame.reindex(columns=['Texas','Utah','California'])
-
+df[:5].swaplevel(0, 1, axis=0)
 ```
 
-#### 重命名索引 `dataframe.index.map()` `datafram.index.rename()`
+#### 多重索引层级重新排序 df.reorder_levels()
 
 ```PYTHON
-# 也可以用map方法
-data.index.map(str.upper)
-
-# rename则是复制一份数据集，不在原df上做修改
-data.rename(index=str.title, columns=str.upper)
-
-# rename可以结合紫癜性对象实现对部分轴标签的更新
-data.rename(index={'OHIO': 'INDIANA'}, columns={'three', 'peekaboo'})
+df[:5].reorder_levels([1, 0], axis=0)
 ```
 
-#### 笛卡尔积生成多重索引
+#### 多重索引排序 df.sort_index()
 
 ```PYTHON
-s_mi = pd.Series(np.arange(6), index=pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']]))
+s.sort_index(level=0)
+
+# 用名字排序
+s.index.set_names(['L1', 'L2'], inplace=True)
+s.sort_index(level='L1')
 ```
 
-####  
+#### 多重索引调整列顺序
+
+```PYTHON
+dfmi.reindex(['two','one'], level = 0, axis=1)
+dfmi.reindex(['second','first'], level = 1, axis=1)
+```
 
 
 
@@ -1343,6 +1372,9 @@ obj[['b','a','d']]
 
 ```PYTHON
 df.loc['cobra':'viper', 'max_speed']
+
+# 多重索引的情况下
+df.loc[('bar', 'two'), 'A']
 ```
 
 #### [pandas.DataFrame.query](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.query.html#pandas-dataframe-query)
@@ -1656,6 +1688,29 @@ tips.pivot_table(['tip_pct', 'size'], rows=['sex', 'day'], cols='smoker', margin
 #如果要使用其他函数，可以传入给aggfunc选项
 tips.pivot_table('tip_pct', rows=['sex', 'smoker'], cols='day', aggfunc=len, margins=True)
 ```
+
+#### [调整pivot_table显示层级](https://blog.csdn.net/weixin_40161254/article/details/91450574 )
+
+需要将pivot_table结果转换如下：
+
+<center>
+    <img src="assets/20190611172741248.png" alt="原始" style="zoom: 27%;" />
+    <img src="assets/20190611172843612.png" alt="目标" style="zoom: 29%;" />
+</center>
+
+```PYTHON
+df1 = df.pivot_table(index=["user_id"], columns=["question_id"], values=["score","duration"]).fillna(0)
+print(df1)
+
+# 通过设置多重索引来调整显示的层级
+c1=df['question_id'].drop_duplicates()
+c2=['score','duration']
+index=pd.MultiIndex.from_product([c1,c2])
+df1.columns=index
+print(df1)
+```
+
+
 
 #### 交叉表 crosstab
 
@@ -2332,7 +2387,45 @@ font_options = {'family':'monospace',
 plt.rc('font', **font_options)  # 然后将字典传入
 ```
 
+#### 画图默认配置的基础代码
 
+```PYTHON
+# 导入 matplotlib 的所有内容（nympy 可以用 np 这个名字来使用）
+from pylab import *
+
+# 创建一个 8 * 6 点（point）的图，并设置分辨率为 80
+figure(figsize=(8,6), dpi=80)
+
+# 创建一个新的 1 * 1 的子图，接下来的图样绘制在其中的第 1 块（也是唯一的一块）
+subplot(1,1,1)
+
+X = np.linspace(-np.pi, np.pi, 256,endpoint=True)
+C,S = np.cos(X), np.sin(X)
+
+# 绘制余弦曲线，使用蓝色的、连续的、宽度为 1 （像素）的线条
+plot(X, C, color="blue", linewidth=1.0, linestyle="-")
+
+# 绘制正弦曲线，使用绿色的、连续的、宽度为 1 （像素）的线条
+plot(X, S, color="green", linewidth=1.0, linestyle="-")
+
+# 设置横轴的上下限
+xlim(-4.0,4.0)
+
+# 设置横轴记号
+xticks(np.linspace(-4,4,9,endpoint=True))
+
+# 设置纵轴的上下限
+ylim(-1.0,1.0)
+
+# 设置纵轴记号
+yticks(np.linspace(-1,1,5,endpoint=True))
+
+# 以分辨率 72 来保存图片
+# savefig("exercice_2.png",dpi=72)
+
+# 在屏幕上显示
+show()
+```
 
 #### 调整subplot周围的间距 plt.subplots_adjust()
 
@@ -2344,6 +2437,15 @@ for i in range(2):
 plt.subplots_adjust(wspace=0, hspace=0)
 ```
 
+### 坐标轴调整
+
+#### 设置刻度、标签和图例
+
+大部分的图标装饰项可以通过以下两种方式实现：
+
+* 过程型的pyplot接口 (如plt.xxx，只对最近的fig起作用)
+* [面向对象的原生matplotlib API (推荐，可以指定对哪个fig使用)](https://matplotlib.org/api/axes_api.html) 
+
 #### 调整x轴坐标
 
 ```python
@@ -2354,24 +2456,11 @@ plt.tick_params(axis='x', labelsize=8)
 plt.xticks(rotation=-15)    
 ```
 
-#### 子图重叠
-
-```PYTHON
-plt.tight_layout()
-```
-
-#### 双坐标轴
+#### 双坐标轴 ax.twinx()
 
 ```PYTHON
 ax2 = ax1.twinx()
 ```
-
-#### 设置刻度、标签和图例
-
-大部分的图标装饰项可以通过以下两种方式实现：
-
-* 过程型的pyplot接口
-* 面向对象的原生matplotlib API (推荐)
 
 #### 设置坐标轴范围 ax.set_xlim()
 
@@ -2385,11 +2474,31 @@ ax.get_xlim()
 ax.set_xlim()
 ```
 
+#### 设置x轴y轴的坐标范围
+
+```PYTHON
+xmin ,xmax = X.min(), X.max()
+ymin, ymax = Y.min(), Y.max()
+
+dx = (xmax - xmin) * 0.2
+dy = (ymax - ymin) * 0.2
+
+xlim(xmin - dx, xmax + dx)
+ylim(ymin - dy, ymax + dy)
+```
+
 #### 设置刻度标签 ax.set_xticks() / ax.set_xticklabels()
 
 ```python
 ax.set_xticks([0, 250, 500, 750, 1000])  # set_xticks设置要修改坐标标签的位置
 ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation=30, fontsize='small')  # 根据上一行的位置设置对应的标签
+
+# pyplot 方法 设置标签位置和相应的符号
+xticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi],
+       [r'$-\pi$', r'$-\pi/2$', r'$0$', r'$+\pi/2$', r'$+\pi$'])
+
+yticks([-1, 0, +1],
+       [r'$-1$', r'$0$', r'$+1$'])
 ```
 
 #### 设置x轴名称 ax.set_xlabel()
@@ -2398,13 +2507,78 @@ ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation=30, fontsiz
 ax.set_xlabel('Stages')
 ```
 
+#### 调整为四象限坐标轴形式
+
+```PYTHON
+ax = gca()
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.xaxis.set_ticks_position('bottom')
+ax.spines['bottom'].set_position(('data',0))
+ax.yaxis.set_ticks_position('left')
+ax.spines['left'].set_position(('data',0))
+```
+
+#### 设置坐标轴标签
+
+| 类型              | 说明                                                         |
+| :---------------- | :----------------------------------------------------------- |
+| `NullLocator`     | No ticks. ![img](assets/1540012569-1664-ticks-NullLocator.png) |
+| `IndexLocator`    | Place a tick on every multiple of some base number of points plotted. ![img](assets/1540012569-4591-ticks-IndexLocator.png) |
+| `FixedLocator`    | Tick locations are fixed. ![img](assets/1540012569-6368-ticks-FixedLocator.png) |
+| `LinearLocator`   | Determine the tick locations. ![img](assets/1540012570-7138-ticks-LinearLocator.png) |
+| `MultipleLocator` | Set a tick on every integer that is multiple of some base. ![img](assets/1540012570-8671-ticks-MultipleLocator.png) |
+| `AutoLocator`     | Select no more than n intervals at nice locations. ![img](assets/1540012570-3960-ticks-AutoLocator.png) |
+| `LogLocator`      | Determine the tick locations for log axes. ![img](assets/1540012571-8369-ticks-LogLocator.png) |
+
+```PYTHON
+
+# Setup a plot such that only the bottom spine is shown
+def setup(ax):
+    ax.spines['right'].set_color('none')
+    ax.spines['left'].set_color('none')
+    ax.yaxis.set_major_locator(ticker.NullLocator())
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.tick_params(which='major', width=1.00)
+    ax.tick_params(which='major', length=5)
+    ax.tick_params(which='minor', width=0.75)
+    ax.tick_params(which='minor', length=2.5)
+    ax.set_xlim(0, 5)
+    ax.set_ylim(0, 1)
+    ax.patch.set_alpha(0.0)
+
+
+plt.figure(figsize=(8, 6))
+n = 8
+
+# Null Locator
+ax = plt.subplot(n, 1, 1)
+setup(ax)
+ax.xaxis.set_major_locator(ticker.NullLocator())
+ax.xaxis.set_minor_locator(ticker.NullLocator())
+ax.text(0.0, 0.1, "NullLocator()", fontsize=14, transform=ax.transAxes)
+```
+
+
+
+### 多图相关
+
+#### 子图重叠
+
+```PYTHON
+plt.tight_layout()
+```
+
+
+
 #### 设置标题 ax.set_title()
 
 ```python
 ax.set_title('aaa')
 ```
 
-#### 添加图例 ax.legend()
+#### [添加图例 ax.legend()]( https://www.cnblogs.com/MTandHJ/p/10850415.html )
 
 ```PYTHON
 # 方法1：添加subplot时候传入label参数
@@ -2412,7 +2586,88 @@ ax.plot(randn(1000).cumsum(), 'k', label='one')
 
 # 方法2：调用ax.legend()
 ax.legend(loc='best')
+
+# 传入对应的线和label生成图例
+ax.legend((line1, line2), ("line1", "line2"))
+
+# 有副坐标轴下，图例放一起
+lns1 = ax.plot(time, Swdown, '-', label = 'Swdown')
+lns2 = ax.plot(time, Rn, '-', label = 'Rn')
+ax2 = ax.twinx()
+lns3 = ax2.plot(time, temp, '-r', label = 'temp')
+
+lns = lns1+lns2+lns3
+labs = [l.get_label() for l in lns]
+ax.legend(lns, labs, loc=0) # 把三个图例放在一起
 ```
+
+#### [调整图例位置 ]( https://www.cnblogs.com/IvyWong/p/9916791.html )
+
+ plt.legend(loc='String or Number', bbox_to_anchor=(num1, num2)) 
+
+`bbox_to_anchor`参数 num1 用于控制 legend 的左右移动，值越大越向右边移动，num2 用于控制 legend 的上下移动，值越大，越向上移动。 
+
+`loc`参数代表位置如下表
+
+| String       | Number |
+| ------------ | ------ |
+| upper right  | 1      |
+| upper left   | 2      |
+| lower left   | 3      |
+| lower right  | 4      |
+| right        | 5      |
+| center left  | 6      |
+| center right | 7      |
+| lower center | 8      |
+| upper center | 9      |
+| center       | 10     |
+
+​     
+
+<center class="half">
+    <img src="assets/1392594-20191107215749853-533056299.png" alt="img" style="zoom: 45%;" /> 
+    <img src="assets/20190920143244170.png" alt="在这里插入图片描述" style="zoom:45%;" />
+</center>
+
+
+
+#### 颜色设置(color参数)
+
+`color`参数可以接受的输入如下：
+
+- an RGB or RGBA (red, green, blue, alpha) tuple of float values in `[0, 1]` (e.g., `(0.1, 0.2, 0.5)` or `(0.1, 0.2, 0.5, 0.3)`);
+- a hex RGB or RGBA string (e.g., `'#0f0f0f'` or `'#0f0f0f80'`; case-insensitive);
+- a string representation of a float value in `[0, 1]` inclusive for gray level (e.g., `'0.5'`);
+- one of `{'b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'}`;
+- a X11/CSS4 color name (case-insensitive);
+- a name from the [xkcd color survey](https://xkcd.com/color/rgb/), prefixed with `'xkcd:'` (e.g., `'xkcd:sky blue'`; case insensitive);
+- one of the Tableau Colors from the 'T10' categorical palette (the default color cycle): `{'tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan'}` (case-insensitive);
+- a "CN" color spec, i.e. `'C'` followed by a number, which is an index into the default property cycle (`matplotlib.rcParams['axes.prop_cycle']`); the indexing is intended to occur at rendering time, and defaults to black if the cycle does not include color.
+
+```python
+# 用“CN”的方法
+import numpy as np
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
+th = np.linspace(0, 2*np.pi, 128)
+
+
+def demo(sty):
+    mpl.style.use(sty)
+    fig, ax = plt.subplots(figsize=(3, 3))
+
+    ax.set_title('style: {!r}'.format(sty), color='C0')  # 这里代表用配色风格中的0号配色
+
+    ax.plot(th, np.cos(th), 'C1', label='C1')  # 这里代表用配色风格中的1号配色
+    ax.plot(th, np.sin(th), 'C2', label='C2')  # 这里代表用配色风格中的2号配色
+    ax.legend()
+
+demo('default')
+demo('seaborn')
+```
+
+
 
 
 
@@ -2443,6 +2698,8 @@ plt.savefig('figpath.svg')
 
 
 ## 画图
+
+
 
 #### 画各变量箱形图
 
@@ -2600,11 +2857,56 @@ sns.catplot(x="Ticket", y="Survived",kind='bar',  data=train_data, ax=axes[1]);
 ax.plot(x, y, linesyple='--', color='g')
 ```
 
+#### 给特殊点做标记
+
+```PYTHON
+t = 2*np.pi/3
+plot([t,t],[0,np.cos(t)], color ='blue', linewidth=2.5, linestyle="--")
+scatter([t,],[np.cos(t),], 50, color ='blue')
+
+annotate(r'$\sin(\frac{2\pi}{3})=\frac{\sqrt{3}}{2}$',
+         xy=(t, np.sin(t)), xycoords='data',
+         xytext=(+10, +30), textcoords='offset points', fontsize=16,
+         arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+
+plot([t,t],[0,np.sin(t)], color ='red', linewidth=2.5, linestyle="--")
+scatter([t,],[np.sin(t),], 50, color ='red')
+
+annotate(r'$\cos(\frac{2\pi}{3})=-\frac{1}{2}$',
+         xy=(t, np.cos(t)), xycoords='data',
+         xytext=(-90, -50), textcoords='offset points', fontsize=16,
+         arrowprops=dict(arrowstyle="->", connectionstyle="arc3,rad=.2"))
+```
+
+ <div align=center><img src="assets/1540010726-1211-exercice-9.png" alt="img" style="zoom: 67%;" /> 
 
 
 
 
 ##  pandas 绘图函数
+
+### [df.plot()]( https://pandas.pydata.org/pandas-docs/stable/reference/frame.html#plotting )
+
+[参数说明]( https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/_core.py#L504-L1533 )
+
+| callable method                                              |                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.html#pandas.DataFrame.plot)([x, y, kind, ax, ….]) | DataFrame plotting accessor and method                       |
+| [`DataFrame.plot.area`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.area.html#pandas.DataFrame.plot.area)(self[, x, y]) | Draw a stacked area plot.                                    |
+| [`DataFrame.plot.bar`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.bar.html#pandas.DataFrame.plot.bar)(self[, x, y]) | Vertical bar plot.                                           |
+| [`DataFrame.plot.barh`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.barh.html#pandas.DataFrame.plot.barh)(self[, x, y]) | Make a horizontal bar plot.                                  |
+| [`DataFrame.plot.box`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.box.html#pandas.DataFrame.plot.box)(self[, by]) | Make a box plot of the DataFrame columns.                    |
+| [`DataFrame.plot.density`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.density.html#pandas.DataFrame.plot.density)(self[, bw_method, ind]) | Generate Kernel Density Estimate plot using Gaussian kernels. |
+| [`DataFrame.plot.hexbin`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hexbin.html#pandas.DataFrame.plot.hexbin)(self, x, y[, C, …]) | Generate a hexagonal binning plot.                           |
+| [`DataFrame.plot.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hist.html#pandas.DataFrame.plot.hist)(self[, by, bins]) | Draw one histogram of the DataFrame’s columns.               |
+| [`DataFrame.plot.kde`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.kde.html#pandas.DataFrame.plot.kde)(self[, bw_method, ind]) | Generate Kernel Density Estimate plot using Gaussian kernels. |
+| [`DataFrame.plot.line`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html#pandas.DataFrame.plot.line)(self[, x, y]) | Plot Series or DataFrame as lines.                           |
+| [`DataFrame.plot.pie`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.pie.html#pandas.DataFrame.plot.pie)(self, \*\*kwargs) | Generate a pie plot.                                         |
+| [`DataFrame.plot.scatter`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.scatter.html#pandas.DataFrame.plot.scatter)(self, x, y[, s, c]) | Create a scatter plot with varying marker point size and color. |
+| [`DataFrame.boxplot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.boxplot.html#pandas.DataFrame.boxplot)(self[, column, by, ax, …]) | Make a box plot from DataFrame columns.                      |
+| [`DataFrame.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html#pandas.DataFrame.hist)(data[, column, by, grid, …]) | Make a histogram of the DataFrame’s.                         |
+
+
 
 #### 线性图
 
@@ -2619,7 +2921,7 @@ df.plot
 
 ```
 
-#### 柱状图 `kind='bar'`
+#### 柱状图 [DataFrame.plot.bar](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.bar.html#pandas.DataFrame.plot.bar)
 
 ```PYTHON
 fig, axes = plt.subplots(2, 1)  # 设定两个子图
@@ -2629,20 +2931,20 @@ data.plot(kind='bar', ax=axes[0], color='k', alpha=0.7)  # 在子图1画图
 data.plot(kind='barh', ax=axes[1], color='k', alpha=0.7)  # 在子图2画图
 ```
 
-#### 堆积柱状图 `stacked=True`
+#### 堆积柱状图 stacked=True
 
 ```PYTHON
 df.plot(kind='barh', stacked=True, alpha=0.5)
 ```
 
-#### 直方图 `dataframe.hist(bins=)`
+#### 直方图 dataframe.hist(bins=)
 
 ```python
 tips['tip_pct'] = tips['tip']/tips['total_bill']
 tips['tip_pct'].hist(bins=50)
 ```
 
-#### 密度图 `kind='kde'`
+#### 密度图 kind='kde'
 
 ```python
 tips['tip_pct'].plot(kind='kde')
@@ -2656,17 +2958,25 @@ values.hist(bins=100, alpha=0.3, color='k', normed=True)
 values.plot(kind='kde', style='k--')
 ```
 
-#### 散点图 `plt.scatter()`
+#### 散点图 plt.scatter()
 
 ```PYTHON
 plt.scatter(trans_data['m1'], trans_data['unemp'])
 ```
 
-#### 散点矩阵图 `pd.scatter_matrix()`
+#### 散点矩阵图 pd.scatter_matrix()
 
 ```python
 pd.scatter_matrix(trans_data, diagonal='kde', color='k', alpha=0.3)
 ```
+
+#### 自定义颜色 df.plot(style=None, colormap=None)
+
+```PYTHON
+
+```
+
+
 
 
 
