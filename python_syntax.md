@@ -178,6 +178,14 @@ if __name__ == '__main__':
     main()
 ```
 
+## 基础设置
+
+#### 忽略warning
+
+```PYTHON
+warnings.simplefilter('ignoree')
+```
+
 
 
 ## 数据加载
@@ -1247,6 +1255,20 @@ animal={'aa':'pig','bb':'dog','cc':'horse','dd':'dog','ee':'pig','ff':'dog','gg'
 #data['animal']=data['food'].map(animal)
 data['animal']=data['food'].map(lambda x:animal[x])
 ```
+
+#### 数值范围映射
+
+```PYTHON
+def after_salary(s):                # s 为 salary 列对应的每一个元素
+    if s <= 3000:
+        return s
+    else:
+        return s - (s-3000)*0.5     # 对每一个元素进行操作并返回
+   
+df['after_salary'] = df['salary'].map(after_salary)
+```
+
+
 
 #### .replace() 替换数据
 
@@ -2437,7 +2459,7 @@ for i in range(2):
 plt.subplots_adjust(wspace=0, hspace=0)
 ```
 
-### 坐标轴调整
+### 坐标轴调整 
 
 #### 设置刻度、标签和图例
 
@@ -2472,11 +2494,8 @@ plt.xlim([0,10])  # 传入参数则设置坐标轴范围，仅对最近的AxesSu
 # 通过subplot实例方法
 ax.get_xlim()
 ax.set_xlim()
-```
 
-#### 设置x轴y轴的坐标范围
-
-```PYTHON
+# 合理设置坐标轴范围
 xmin ,xmax = X.min(), X.max()
 ymin, ymax = Y.min(), Y.max()
 
@@ -2887,7 +2906,7 @@ annotate(r'$\cos(\frac{2\pi}{3})=-\frac{1}{2}$',
 
 ### [df.plot()]( https://pandas.pydata.org/pandas-docs/stable/reference/frame.html#plotting )
 
-[参数说明]( https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/_core.py#L504-L1533 )
+#### [参数说明]( https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/_core.py#L504-L1533 )
 
 | callable method                                              |                                                              |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
