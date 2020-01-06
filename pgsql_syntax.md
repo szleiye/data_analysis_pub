@@ -192,3 +192,32 @@ where table_schema = 'public'
 order by ordinal_position
 ```
 
+#### 查看索引信息
+
+```SQL
+select
+    A.SCHEMANAME,
+    A.TABLENAME,
+    A.INDEXNAME,
+    A.TABLESPACE,
+    A.INDEXDEF,
+    B.AMNAME,
+    C.INDEXRELID,
+    C.INDNATTS,
+    C.INDISUNIQUE,
+    C.INDISPRIMARY,
+    C.INDISCLUSTERED,
+    D.DESCRIPTION
+from PG_AM B 
+	left join PG_CLASS F on B.OID = F.RELAM 
+	left join PG_STAT_ALL_INDEXES E on F.OID = E.INDEXRELID 
+	left join PG_INDEX C on E.INDEXRELID = C.INDEXRELID 
+	left outer join PG_DESCRIPTION D on C.INDEXRELID = D.OBJOID, PG_INDEXES A
+where
+    A.SCHEMANAME = E.SCHEMANAME
+    and A.TABLENAME = E.RELNAME
+    and A.INDEXNAME = E.INDEXRELNAME
+    and E.SCHEMANAME = 'public'
+    and E.RELNAME = 't_student';
+```
+

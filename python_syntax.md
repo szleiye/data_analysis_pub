@@ -1259,6 +1259,8 @@ data['animal']=data['food'].map(lambda x:animal[x])
 #### 数值范围映射
 
 ```PYTHON
+
+# 方法1： 用自定义函数
 def after_salary(s):                # s 为 salary 列对应的每一个元素
     if s <= 3000:
         return s
@@ -1266,6 +1268,23 @@ def after_salary(s):                # s 为 salary 列对应的每一个元素
         return s - (s-3000)*0.5     # 对每一个元素进行操作并返回
    
 df['after_salary'] = df['salary'].map(after_salary)
+
+# 方法2：用pd.cut
+bins = [0, 2, 18, 35, 65, np.inf]
+names = ['<2', '2-18', '18-35', '35-65', '65+']
+
+df['AgeRange'] = pd.cut(df['Age'], bins, labels=names)
+
+# 方法3：用np.digitize
+df = pd.DataFrame({'Age': [99, 53, 71, 84, 84],
+                   'Age_units': ['Y', 'Y', 'Y', 'Y', 'Y']})
+
+bins = [0, 2, 18, 35, 65]
+names = ['<2', '2-18', '18-35', '35-65', '65+']
+
+d = dict(enumerate(names, 1))
+
+df['AgeRange'] = np.vectorize(d.get)(np.digitize(df['Age'], bins))
 ```
 
 
