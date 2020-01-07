@@ -1556,16 +1556,39 @@ df[(df.a < df.b) & (df.b < df.c)]  # 传统方法
 # first、last
 ```
 
+#### aggregation function
+
+常用的`agg`函数如下:
+
+* 这些函数会忽略`NA`值
+* 任何将Series降维到scalar的函数都可以看作agg函数，比如` df.groupby('A').agg(lambda ser: 1) `
+* `agg`和`apply`的区别在于，`agg`是传入一列数据返回一个标量，而`apply`是将一组数据全部传入，可以返回多维结果
+
+| Function     | Description                                |
+| :----------- | :----------------------------------------- |
+| `mean()`     | Compute mean of groups                     |
+| `sum()`      | Compute sum of group values                |
+| `size()`     | Compute group sizes                        |
+| `count()`    | Compute count of group                     |
+| `std()`      | Standard deviation of groups               |
+| `var()`      | Compute variance of groups                 |
+| `sem()`      | Standard error of the mean of groups       |
+| `describe()` | Generates descriptive statistics           |
+| `first()`    | Compute first of group values              |
+| `last()`     | Compute last of group values               |
+| `nth()`      | Take nth value, or a subset if n is a list |
+| `min()`      | Compute min of group values                |
+| `max()`      | Compute max of group values                |
+
 #### 调用自己得聚合函数 DataFrame.GroupBy.agg  
 
 ```PYTHON
-# 对一个变量分组统计多个数值
-df.groupby('sex').agg({'tip': np.max, 'total_bill': np.sum})
-
 # count(distinct **)
 df.groupby('tip').agg({'sex': pd.Series.nunique})
 
+# 一次传入多个agg function
 train_data[['Title','Survived']].groupby('Title', as_index=False).agg({np.mean, np.sum, 'size','count'})
+grouped['C'].agg([np.sum, np.mean, np.std])
 ```
 
 ```PYTHON
@@ -1583,6 +1606,34 @@ print(dt_modelSample.query("rid == rid").groupby(['enter_month']).apply(
 
 ```PYTHON
 grouped_pct.agg([('foo', 'mean'),('bar', np.std)])
+
+(grouped['C'].agg([np.sum, np.mean, np.std])
+             .rename(columns={'sum': 'foo',
+                              'mean': 'bar',
+                              'std': 'baz'}))
+
+# 新版本特性1
+animals = pd.DataFrame({'kind': ['cat', 'dog', 'cat', 'dog'],
+                        'height': [9.1, 6.0, 9.5, 34.0],
+                        'weight': [7.9, 7.5, 9.9, 198.0]})
+
+animals.groupby("kind").agg(
+    min_height=pd.NamedAgg(column='height', aggfunc='min'),
+    max_height=pd.NamedAgg(column='height', aggfunc='max'),
+    average_weight=pd.NamedAgg(column='weight', aggfunc=np.mean),
+)
+
+# 新版本特性2 或者直接传入元组 一样的
+animals.groupby("kind").agg(
+    min_height=('height', 'min'),
+    max_height=('height', 'max'),
+    average_weight=('weight', np.mean),
+)
+
+# 新版本特性3 传入非法的列名
+animals.groupby("kind").agg(**{
+    'total weight': pd.NamedAgg(column='weight', aggfunc=sum),
+})
 ```
 
 #### 对不同的列应用不同的函数
@@ -1592,13 +1643,22 @@ grouped = tips.groupby(['sex', 'smoker'])
 
 #1
 grouped.agg({'tip': np.max, 'size': 'sum'})
+grouped.agg({'C': np.sum,
+             'D': lambda x: np.std(x, ddof=1)})
 
 #2
 grouped.agg({'tip_pct':['min', 'max', 'mean', 'std'], 
             'size':'sum'})
 ```
 
-#### 无索引方式返回聚合函数 `as_index=False`
+#### 传入多个lambda函数
+
+```PYTHON
+ grouped['C'].agg([lambda x: x.max() - x.min(),
+                   lambda x: x.median() - x.mean()])
+```
+
+#### 无索引方式返回聚合函数 as_index=False
 
 ```PYTHON
 # 第一种是用as_index选项
@@ -1641,7 +1701,7 @@ data.groupby(group_key).apply(fill_mean)
 
 
 
-#### transform 将聚合结果应用到dataframe上
+####  将聚合结果应用到dataframe上  grouped.transform()
 
 transform中传入的函数只能是：
 
@@ -1653,6 +1713,9 @@ transform中传入的函数只能是：
 key = ['one', 'two', 'one', 'two', 'one']
 people.groupby(key).mean()  # 分组求平均值的结果
 people.groupby(key).transform(np.mean)  # 效果是将聚合后平均值的结果合并到原来的dataframe中
+
+# 填充缺失值
+df['B'] = df.groupby(['A']).transform(lambda x : x.fillna(x.mean))
 
 # 笨拙的方法，先groupby然后用merge合并
 
@@ -1669,6 +1732,13 @@ def top(df, n=5, column='tip_pct'):
 
 # apply的函数能够接受其他参数或关键字，将关键字放在函数名后面
 tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill')
+```
+
+#### filter
+
+```PYTHON
+sf = pd.Series([1, 1, 2, 3, 3, 3])
+sf.groupby(sf).filter(lambda x: x.sum() > 2)
 ```
 
 
