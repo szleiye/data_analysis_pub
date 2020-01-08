@@ -1321,15 +1321,29 @@ df.loc[df.sex == 'Male', 'sex'] = 'Leone'
 data[np.abs(data) > 3] = np.sign(data)*3
 ```
 
+#### interval 属性
 
+|Attributes||
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`closed`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed.html#pandas.Interval.closed) | Whether the interval is closed on the left-side, right-side, both or neither |
+| [`closed_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_left.html#pandas.Interval.closed_left) | Check if the interval is closed on the left side.            |
+| [`closed_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_right.html#pandas.Interval.closed_right) | Check if the interval is closed on the right side.           |
+| [`is_empty`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.is_empty.html#pandas.Interval.is_empty) | Indicates if an interval is empty, meaning it contains no points. |
+| [`left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.left.html#pandas.Interval.left) | Left bound for the interval                                  |
+| [`length`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.length.html#pandas.Interval.length) | Return the length of the Interval                            |
+| [`mid`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.mid.html#pandas.Interval.mid) | Return the midpoint of the Interval                          |
+| [`open_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_left.html#pandas.Interval.open_left) | Check if the interval is open on the left side.              |
+| [`open_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_right.html#pandas.Interval.open_right) | Check if the interval is open on the right side.             |
+| [`right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.right.html#pandas.Interval.right) | Right bound for the interval                                 |
 
 #### 连续变量分段 pd.cut()
 
-| 参数      | 说明 |
-| --------- | ---- |
-| right     |      |
-| labels    |      |
-| precision |      |
+| 参数      | 说明     |
+| --------- | -------- |
+| right     |          |
+| labels    |          |
+| precision |          |
+| rebins    | 返回分组 |
 
 ```PYTHON
 # 指定分段，默认左开右闭
@@ -1340,9 +1354,8 @@ cats = pd.cut(ages, bins)
 group_names = ['Youth', 'YoungAdult', 'MiddleAged', 'Senior']
 pd.cut(ages, bins, labels=group_names)
 
-# 查看分段的label和level属性
-cats.labels
-cats.levels
+# 查看分段的categories属性
+cats.categories
 ```
 
 #### 按分位数分段 pd.qcut()
@@ -1354,6 +1367,19 @@ cats = pd.qcut(data, 4)
 # 设置自定义的分位数
 pd.qcut(data, [0, 0.1, 0.5, 0.9, 1])
 ```
+
+#### 取分段后的左边区间/右边区间
+
+```PYTHON
+ages = [20,22,25,27,21,23,37,23,23,54,26,29]
+bins = [18,25,35,60,100]
+cats = pd.cut(ages,10)
+temp = pd.DataFrame(cats)
+temp.columns = ['a']
+temp['b'] = temp.a.apply(lambda x:x.left)
+```
+
+
 
 ## 数据操作-切片
 

@@ -69,6 +69,61 @@ GROUPING SETS (
 )
 ```
 
+### 日期时间
+
+#### 计算时间间隔 AGE()
+
+```MYSQL
+select AGE('2018-08-31', '2018-10-15')  # 返回间隔X年X月X日，配合extract
+```
+
+#### EXTRACT()/DATEPART()
+
+```PYTHON
+
+```
+
+
+
+### [窗口函数](http://postgres.cn/docs/10/tutorial-window.html)
+
+和groupby不同， 窗口函数并不会使多行被聚集成一个单独的输出行 ，而是保留和原来一样的行数
+
+ 一个窗口函数调用总是包含一个直接跟在窗口函数名及其参数之后的`OVER`子句。
+
+`OVER`子句决定究竟查询中的哪些行被分离出来由窗口函数处理。
+
+`OVER`子句中的`PARTITION BY`子句指定了将具有相同`PARTITION BY`表达式值的行分到组或者分区。对于每一行，窗口函数都会在当前行同一分区的行上进行计算。 
+
+ 通过`OVER`上的`ORDER BY`控制窗口函数处理行的顺序（窗口的`ORDER BY`并不一定要符合行输出的顺序。） 
+
+```mysql
+# 每一个窗口行为可以被放在一个命名的WINDOW子句中，然后在OVER中引用它
+SELECT sum(salary) OVER w, avg(salary) OVER w
+FROM empsalary
+WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);
+  
+# 配合rank函数
+SELECT depname, empno, salary,
+       rank() OVER (PARTITION BY depname ORDER BY salary DESC) 
+FROM empsalary;
+  
+```
+
+#### 窗口函数结果进行筛选
+
+```MYSQL
+SELECT depname, empno, salary, enroll_date
+FROM
+  (SELECT depname, empno, salary, enroll_date,
+          rank() OVER (PARTITION BY depname ORDER BY salary DESC, empno) AS pos
+     FROM empsalary
+  ) AS ss
+WHERE pos < 3;
+```
+
+
+
 ## 系统表
 
 ### information_schema
@@ -77,9 +132,9 @@ information_schema 可以看作是一个信息数据库， 如数据库名，数
 
 #### 字段信息 columns 
 
-| 名字                       | 数据类型          | 描述                                                         |
-| :------------------------- | :---------------- | :----------------------------------------------------------- |
 | `table_catalog`            | `sql_identifier`  | 包含表的数据库的名字（总是当前数据库）                       |
+| :------------------------- | :---------------- | :----------------------------------------------------------- |
+| 名字                       | 数据类型          | 描述                                                         |
 | `table_schema`             | `sql_identifier`  | 包含表的模式的名字                                           |
 | `table_name`               | `sql_identifier`  | 表名                                                         |
 | `column_name`              | `sql_identifier`  | 字段名                                                       |
