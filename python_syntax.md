@@ -292,6 +292,51 @@ isinstance(a, (int, float))
 a is None # 返回一个布尔值
 ```
 
+#### 静态方法  staticmethod
+
+ staticmethod用于修饰类中的方法,使其可以在不创建类实例的情况下调用方法。当然，也可以像一般的方法一样用实例调用该方法。
+
+静态方法不可以引用类中的属性或方法，其参数列表也不需要约定的默认参数self。
+
+静态方法就是类对外部函数的封装，有助于优化代码结构和提高程序的可读性。
+
+```PYTHON
+class Time():
+    def __init__(self,sec):
+        self.sec = sec
+    #声明一个静态方法
+    @staticmethod
+    def sec_minutes(s1,s2):
+        #返回两个时间差
+        return abs(s1-s2)
+
+t = Time(10)
+#分别使用类名调用和使用实例调用静态方法
+print(Time.sec_minutes(10,5),t.sec_minutes(t.sec,5))
+#结果为5 5
+```
+
+#### [将函数应用于列表中 map()](https://blog.csdn.net/qq_41800366/article/details/87881144)
+
+ Python中的map() 会根据提供的函数对指定序列做映射。 返回一个迭代器
+
+```PYTHON
+A = [1, -1, 2, -3]
+B = list(map(abs, A))
+print(B)  # 结果 [1, 1, 2, 3]
+
+
+B = map(abs, A)
+C = [item for item in B]
+print(B)  # 结果 <map object at 0x0000024B202476D8>
+print(C)  # 结果 [1, 1, 2, 3]
+
+```
+
+
+
+
+
 ## if 语句
 
 #### 三元表达式
@@ -310,6 +355,25 @@ def md5value(s):
     md5.update(s.encode("utf8"))
     return md5.hexdigest()
 ```
+
+#### [StringIO]( https://blog.csdn.net/lucyxu107/article/details/82728266 )
+
+ 数据读写不一定是文件，也可以在内存中读写。StringIO就是在内存中读写str 
+
+```python
+>>> from io import StringIO
+>>> f = StringIO()
+>>> f.write('hello')
+5
+>>> f.write(' ')
+1
+>>> f.write('world!')
+6
+>>> print(f.getvalue())
+
+```
+
+
 
 
 
@@ -867,6 +931,10 @@ pd.reset_option("display.max_rows")
 
 `engine`：可以选C或者pyhon，如果文件名是中文，选C会报错
 
+`dtype`: 输入一个字典制定列的数据类型，如 {‘a’: np.float64, ‘b’: np.int32, ‘c’: ‘Int64’}. 配合`na_values `设定空值
+
+`na_values` : 输入scalar, str, list-like, or dict 。指定特定的值为NA值，默认以下值会认定为NA： ‘’, ‘#N/A’, ‘#N/A N/A’, ‘#NA’, ‘-1.#IND’, ‘-1.#QNAN’, ‘-NaN’, ‘-nan’, ‘1.#IND’, ‘1.#QNAN’, ‘N/A’, ‘NA’, ‘NULL’, ‘NaN’, ‘n/a’, ‘nan’, ‘null’.
+
 ```python
 ratings_1 = pd.read_csv("../data/AI派_数据分析项目/ml-latest-small/ratings_1.csv",engine='python')
 # 读数据的时候直接给列命名
@@ -1197,16 +1265,16 @@ dt_loan[list_1] = dt_loan[list_1].astype(float, copy=True)
 df[['two', 'three']] = df[['two', 'three']].astype(float)
 ```
 
-#### [pandas.to_datetime](http://pandas.pydata.org/pandas-docs/version/0.15/generated/pandas.to_datetime.html)
+#### [转换成日期格式 pandas.to_datetime](http://pandas.pydata.org/pandas-docs/version/0.15/generated/pandas.to_datetime.html)
 
 ```PYTHON
 # 批量转换成日期格式
 dt_overdue_record_raw[list_3] = dt_overdue_record_raw[list_3].apply(pd.to_datetime, infer_datetime_format=True)
 ```
 
-[pandas.Series.dt.strftime](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.strftime.html)
+#### [根据日期返回指定格式的字符串 pandas.Series.dt.strftime](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.strftime.html)
 
-根据日期返回指定格式的字符串
+
 
 ```python
 # ex1
@@ -1217,11 +1285,15 @@ df1['month'] = df1.ListingInfo.dt.strftime('%Y-%m')
  rng.strftime('%B %d, %Y, %r')
 ```
 
-#### pandas.read_csv(`parse_dates`=,  `infer_dateime`=True)读取数据格式时推断日期
+
+
+#### pandas.read_csv(parse_dates=, infer_dateime=True)读取数据格式时推断日期
 
 ```PYTHON
 pd.read_csv(parse_dates=['report_time'],  infer_dateime=True, index_col=0)
 ```
+
+
 
 #### [pandas.DataFrame.select_dtypes() 选择数据类型](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.select_dtypes.html)
 
@@ -1234,6 +1306,79 @@ DataFrame.select_dtypes(*self*, *include=None*, *exclude=None*)
 - To select timedeltas, use `np.timedelta64`, `'timedelta'` or `'timedelta64'`
 - To select Pandas categorical dtypes, use `'category'`
 - To select Pandas datetimetz dtypes, use `'datetimetz'` (new in 0.20.0) or `'datetime64[ns, tz]'`
+
+
+
+####  [pandas.DataFrame.to_json()]( https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.to_json.html )
+
+`path_or_buf` : string or file handle, optional
+
+   File path or object. If not specified, the result is returned as a string.
+
+`orient` : string;  Indication of expected JSON string format.
+
+   - Series
+   
+       - default is ‘index’
+       - allowed values are: {‘split’,’records’,’index’,’table’}
+   
+   - DataFrame
+   
+       - default is ‘columns’
+       - allowed values are: {‘split’,’records’,’index’,’columns’,’values’,’table’}
+   
+   - The format of the JSON string
+   
+       - ‘split’ : dict like {‘index’ -> [index], ‘columns’ -> [columns], ‘data’ -> [values]}
+       
+       - ‘records’ : list like [{column -> value}, … , {column -> value}]
+       
+       - ‘index’ : dict like {index -> {column -> value}}
+       
+       - ‘columns’ : dict like {column -> {index -> value}}
+       
+       - ‘values’ : just the values array
+       
+       - ‘table’ : dict like {‘schema’: {schema}, ‘data’: {data}} describing the data, and the data component is like `orient='records'`.
+       
+           *Changed in version 0.20.0.*
+
+`index` : bool, default True
+
+   Whether to include the index values in the JSON string. Not including the index (`index=False`) is only supported when orient is ‘split’ or ‘table’.
+
+```python
+df = pd.DataFrame([['a', 'b'], ['c', 'd']],
+                   index=['row 1', 'row 2'],
+                   columns=['col 1', 'col 2'])
+
+df.to_json(orient='split')
+
+```
+
+
+
+#### [转多层json]( https://blog.csdn.net/LeeGe666/article/details/89156691 )
+
+```PYTHON
+import json
+
+article_info = {}
+data = json.loads(json.dumps(article_info))
+
+data['article1'] = 'NONE'
+
+article2 = {'title': 'python基础', 'publish_time': '2019-4-1', 'writer': {}}
+data['article2'] = article2
+
+writer = {'name': '李先生', 'sex': '男', 'email': 'xxx@gmail.com'}
+data['article2']['writer'] = writer
+
+article = json.dumps(data, ensure_ascii=False)
+print(article)
+```
+
+
 
 ## 数据操作
 
@@ -1393,7 +1538,7 @@ temp['b'] = temp.a.apply(lambda x:x.left)
 
 * []
 
-#### 通过[]方式取切片
+#### 通过[]方式取切片，赋值
 
 ```PYTHON
 # 交换A,B两列的值
@@ -1404,10 +1549,57 @@ df.loc[:, ['B', 'A']] = df[['A', 'B']]
 df.loc[:, ['B', 'A']] = df[['A', 'B']].to_numpy()  # 正确的方法
 ```
 
+#### 同时给多列赋值
+
+```PYTHON
+a=[['js',100,'cz',200],['zj',120,'xs',300],['zj',150,'xs',200],['js',200,'cz',200],['js',110,'wx',180],['js',300,'sz',250],['zj',210,'hz',280]]
+df=pd.DataFrame(a)
+df1.columns=['a','b','c','d']
+df1['e']=111
+df1['f']=222
+df1.loc[2,'f']=223
+
+con=(df1['a']=='zj') & (df1['c']=='xs')
+df1.loc[con,['b','d']]=df1.loc[con,['e','f']].to_numpy()
+```
+
+
+
 #### 给某一行赋值
 
 ```PYTHON
  x.iloc[1] = {'x': 9, 'y': 99}
+```
+
+####  **if-then和if-then-else逻辑赋值** 
+
+```PYTHON
+df = pd.DataFrame(
+        {'AAA': [4,5,6,7], 'BBB': [10,20,30,40], 'CCC': [100,50,-30,-50] })
+# loc函数
+# if-then 的逻辑在某列上，【选取满足的条件的行数据，然后对指定的列赋值】
+df.loc[df.AAA >= 5, 'BBB'] = -1
+df.loc[df.AAA >= 5,['BBB','CCC']] = 555
+df.loc[df.AAA < 5,['BBB','CCC']] = 2000
+df.loc[df.AAA >= 5, 'BBB'] = df.AAA
+
+# where函数
+# 根据每个位置元素的true或false，去赋值，true原值不变，false改变
+df_mask = pd.DataFrame({'AAA' : [True] * 4, 'BBB' : [False] * 4,'CCC' : [True,False] * 2})
+# df_mask的'AAA'列全是true，'BBB'列全是false，'CCC'是true,false,true,false
+df.where(df_mask, -1000)
+Out[6]: 
+   AAA   BBB   CCC
+0    4 -1000  2000
+1    5 -1000 -1000
+2    6 -1000   555
+3    7 -1000 -1000
+# 利用numpy中的where函数,实现if-then-else逻辑
+df = pd.DataFrame(
+     {'AAA' : [4,5,6,7], 'BBB' : [10,20,30,40],'CCC' : [100,50,-30,-50]})
+# 'AAA'列如果大于5，赋值某列(新列)为high，否则赋值low
+df['logic'] = np.where(df['AAA']>5, 'high', 'low')
+
 ```
 
 
@@ -1507,7 +1699,7 @@ df2[criterion]
 df2[criterion & (df2['b'] == 'x')]
 ```
 
-#### 
+
 
 #### [随机抽取样本 df.sample()](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.sample.html#pandas.DataFrame.sample)
 
@@ -2006,38 +2198,6 @@ print(frame['Texas'].apply(casewhen))
 
 ```
 
-####  **if-then和if-then-else逻辑实现** 
-
-```PYTHON
-
-df = pd.DataFrame(
-        {'AAA': [4,5,6,7], 'BBB': [10,20,30,40], 'CCC': [100,50,-30,-50] })
-# loc函数
-# if-then 的逻辑在某列上，【选取满足的条件的行数据，然后对指定的列赋值】
-df.loc[df.AAA >= 5, 'BBB'] = -1
-df.loc[df.AAA >= 5,['BBB','CCC']] = 555
-df.loc[df.AAA < 5,['BBB','CCC']] = 2000
-df.loc[df.AAA >= 5, 'BBB'] = df.AAA
-
-# where函数
-# 根据每个位置元素的true或false，去赋值，true原值不变，false改变
-df_mask = pd.DataFrame({'AAA' : [True] * 4, 'BBB' : [False] * 4,'CCC' : [True,False] * 2})
-# df_mask的'AAA'列全是true，'BBB'列全是false，'CCC'是true,false,true,false
-df.where(df_mask, -1000)
-Out[6]: 
-   AAA   BBB   CCC
-0    4 -1000  2000
-1    5 -1000 -1000
-2    6 -1000   555
-3    7 -1000 -1000
-# 利用numpy中的where函数,实现if-then-else逻辑
-df = pd.DataFrame(
-     {'AAA' : [4,5,6,7], 'BBB' : [10,20,30,40],'CCC' : [100,50,-30,-50]})
-# 'AAA'列如果大于5，赋值某列(新列)为high，否则赋值low
-df['logic'] = np.where(df['AAA']>5, 'high', 'low')
-
-```
-
 
 
 #### 用B表数据更新A表的值
@@ -2400,13 +2560,29 @@ numpy.random.randn(d0, d1, …, dn)  # 是从标准正态分布中返回一个�
 
 # sklearn
 
+## 评价标准
+
+#### [sklearn.metrics.roc_curve]( https://blog.csdn.net/u014264373/article/details/80487766)
+
+```PYTHON
+import numpy as np
+from sklearn import metrics
+y = np.array([1, 1, 2, 2])
+scores = np.array([0.1, 0.4, 0.35, 0.8])
+fpr, tpr, thresholds = metrics.roc_curve(y, scores, pos_label=2) # thresholds是遍历scores。返回以各个thresholds下的fpr, tpr
+```
+
+
+
 ## 决策树
 
 
 
 
 
-## Python-实战问题
+
+
+# Python-实战问题
 
 ### [SettingWithCopyWarning警告](https://blog.csdn.net/dta0502/article/details/82288837)
 
@@ -3113,6 +3289,21 @@ pd.scatter_matrix(trans_data, diagonal='kde', color='k', alpha=0.3)
 
 
 
+
+# Toolz 函数式编程库
+
+#### 嵌套函数 pipe
+
+Pipe a value through a sequence of functions
+
+`pipe(data, f, g, h)` is equivalent to `h(g(f(data)))`
+
+```PYTHON
+from toolz.curried import pipe, map, compose, get  
+>>> double = lambda i: 2 * i
+>>> pipe(3, double, str)
+    '6'
+```
 
 
 

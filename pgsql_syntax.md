@@ -212,16 +212,16 @@ select column_name from information_schema.columns where table_schema = '' and t
 select 
     b.nspname as schemaname,
     a.relname as table_name,
-    a.reltuple as rowcounts,
+    a.reltuples as rowcounts,
     c.tableowner, 
     c.tablespace,
     c.hasindexes
 from pg_class a 
-	left join pg_namespace b on a.relnamespace = b.oid
-	left join pg_tables c on a.relname=c.tablename and b.nspname=c.schemaname
+    left join pg_namespace b on a.relnamespace = b.oid
+    left join pg_tables c on a.relname=c.tablename and b.nspname=c.schemaname
 where a.relkind='r'
-	and a.relname like ''
-	and b.nspname='base_phjr_sz'
+    and a.relname like ''
+    and b.nspname='base_phjr_sz'
 order by rowcounts desc
 ```
 
@@ -241,9 +241,9 @@ select
     col.column_default,
     des.description
 from information_schema.columns col left join pg_description des 
-	on col.table_name = des.objoid and col.ordinal_position = des.objsubid
+    on col.table_name = des.objoid and col.ordinal_position = des.objsubid
 where table_schema = 'public' 
-	and table_name = 't_student'
+    and table_name = 't_student'
 order by ordinal_position
 ```
 
@@ -264,10 +264,10 @@ select
     C.INDISCLUSTERED,
     D.DESCRIPTION
 from PG_AM B 
-	left join PG_CLASS F on B.OID = F.RELAM 
-	left join PG_STAT_ALL_INDEXES E on F.OID = E.INDEXRELID 
-	left join PG_INDEX C on E.INDEXRELID = C.INDEXRELID 
-	left outer join PG_DESCRIPTION D on C.INDEXRELID = D.OBJOID, PG_INDEXES A
+    left join PG_CLASS F on B.OID = F.RELAM 
+    left join PG_STAT_ALL_INDEXES E on F.OID = E.INDEXRELID 
+    left join PG_INDEX C on E.INDEXRELID = C.INDEXRELID 
+    left outer join PG_DESCRIPTION D on C.INDEXRELID = D.OBJOID, PG_INDEXES A
 where
     A.SCHEMANAME = E.SCHEMANAME
     and A.TABLENAME = E.RELNAME
@@ -275,4 +275,12 @@ where
     and E.SCHEMANAME = 'public'
     and E.RELNAME = 't_student';
 ```
+
+
+
+## 优化查询
+
+#### [EXPLIAN](https://www.yiibai.com/manual/postgresql/using-explain.html)
+
+
 
