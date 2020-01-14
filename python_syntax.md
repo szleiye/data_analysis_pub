@@ -425,9 +425,17 @@ import re
 re.sub('[-/]', "", pbccStats.str_end_date)
 ```
 
+#### [小写字母转大写字母 upper()](https://www.runoob.com/python/att-string-upper.html )
+
+```PYTHON
+str = "this is string example....wow!!!";
+
+print "str.upper() : ", str.upper()
+```
 
 
-数字格式化
+
+#### 数字格式化
 
 | 数字       | 格式                                                         | 输出                                         | 描述                         |
 | ---------- | ------------------------------------------------------------ | -------------------------------------------- | ---------------------------- |
