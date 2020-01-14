@@ -178,6 +178,18 @@ if __name__ == '__main__':
     main()
 ```
 
+## python 基础
+
+#### [python中带下划线的变量和函数的意义](https://www.cnblogs.com/elie/p/5902995.html)
+
+```python
+
+```
+
+
+
+
+
 ## 基础设置
 
 #### 忽略warning
