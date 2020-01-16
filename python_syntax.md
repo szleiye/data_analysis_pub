@@ -2770,6 +2770,12 @@ for i in range(2):
 plt.subplots_adjust(wspace=0, hspace=0)
 ```
 
+#### 设置标题 ax.set_title()
+
+```python
+ax.set_title('aaa')
+```
+
 ### 坐标轴调整 
 
 #### 设置刻度、标签和图例
@@ -2794,6 +2800,36 @@ plt.xticks(rotation=-15)
 ```PYTHON
 ax2 = ax1.twinx()
 ```
+
+#### [三坐标轴](https://matplotlib.org/gallery/ticks_and_spines/multiple_yaxis_with_spines.html#sphx-glr-gallery-ticks-and-spines-multiple-yaxis-with-spines-py )
+
+```PYTHON
+par1 = host.twinx()
+par2 = host.twinx()
+
+# Offset the right spine of par2.  The ticks and label have already been
+# placed on the right by twinx above.
+par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
+```
+
+#### 设置坐标轴位置 ax.spines.set_position()
+
+Spine position is specified by a 2 tuple of (position type, amount). The position types are:
+
+- 'outward' : place the spine out from the data area by the specified number of points. (Negative values specify placing the spine inward.)
+- 'axes' : place the spine at the specified Axes coordinate (from 0.0-1.0).
+- 'data' : place the spine at the specified data coordinate. 移动到指定的坐标位置
+
+Additionally, shorthand notations define a special positions:
+
+- 'center' -> ('axes',0.5)
+- 'zero' -> ('data', 0.0)
+
+```PYTHON
+par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
+```
+
+
 
 #### 设置坐标轴范围 ax.set_xlim()
 
@@ -2894,6 +2930,87 @@ ax.text(0.0, 0.1, "NullLocator()", fontsize=14, transform=ax.transAxes)
 
 ### 多图相关
 
+#### [设定图纸1 plt.subplots()](https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots)
+
+一行代码中同时返回figure和axes
+
+```PYTHON
+# 1
+fig, axes = plt.subplots(2, 1)  # 设定两个子图
+
+# 2
+f, (ax1, ax2) = plt.subplots(1, 2, sharey=True)
+ax1.plot(x, y)
+
+# 3
+fig, axes = plt.subplots(2, 2, subplot_kw=dict(polar=True))
+axes[0, 0].plot(x, y)
+axes[1, 1].scatter(x, y)
+```
+
+
+
+#### [设定图纸2(推荐) fig.add_subplots()](https://matplotlib.org/api/_as_gen/matplotlib.figure.Figure.html#matplotlib.figure.Figure.add_subplot) 
+
+对已存在的figure添加一个子图axes对象
+
+```PYTHON
+fig = plt.figure()
+fig.add_subplot(221)
+
+# equivalent but more general
+ax1 = fig.add_subplot(2, 2, 1)
+
+# add a subplot with no frame
+ax2 = fig.add_subplot(222, frameon=False)
+
+# add a polar subplot
+fig.add_subplot(223, projection='polar')
+
+# add a red subplot that share the x-axis with ax1
+fig.add_subplot(224, sharex=ax1, facecolor='red')
+
+#delete x2 from the figure
+fig.delaxes(ax2)
+
+#add x2 to the figure again
+fig.add_subplot(ax2)
+```
+
+
+
+#### [添加每行不同数量的子图](https://matplotlib.org/gallery/subplots_axes_and_figures/axes_margins.html#sphx-glr-gallery-subplots-axes-and-figures-axes-margins-py )
+
+```PYTHON
+import numpy as np
+import matplotlib.pyplot as plt
+
+
+def f(t):
+    return np.exp(-t) * np.cos(2*np.pi*t)
+
+
+t1 = np.arange(0.0, 3.0, 0.01)
+
+ax1 = plt.subplot(212)
+ax1.margins(0.05)           # Default margin is 0.05, value 0 means fit
+ax1.plot(t1, f(t1))
+
+ax2 = plt.subplot(221)
+ax2.margins(2, 2)           # Values >0.0 zoom out
+ax2.plot(t1, f(t1))
+ax2.set_title('Zoomed out')
+
+ax3 = plt.subplot(222)
+ax3.margins(x=0, y=-0.25)   # Values in (-0.5, 0.0) zooms in to center
+ax3.plot(t1, f(t1))
+ax3.set_title('Zoomed in')
+
+plt.show()
+```
+
+
+
 #### 子图重叠
 
 ```PYTHON
@@ -2902,11 +3019,7 @@ plt.tight_layout()
 
 
 
-#### 设置标题 ax.set_title()
-
-```python
-ax.set_title('aaa')
-```
+### 图例
 
 #### [添加图例 ax.legend()]( https://www.cnblogs.com/MTandHJ/p/10850415.html )
 
@@ -2929,6 +3042,30 @@ lns3 = ax2.plot(time, temp, '-r', label = 'temp')
 lns = lns1+lns2+lns3
 labs = [l.get_label() for l in lns]
 ax.legend(lns, labs, loc=0) # 把三个图例放在一起
+```
+
+#### 多图图例调整 
+
+```PYTHON
+lines = []
+labels = []
+ax_list = [ax1, ax2, ax3]
+for ax in ax_list:
+    lines.append([l_1 for l_1 in ax.get_legend_handles_label()[0]])
+    labels.append([a_1 for a_1 in ax.get_legend_handles_label()[1]])
+    
+lines = sum(lines, [])
+labels = sum(labels, [])
+
+ax1.legend(lines, labels, loc=0)
+ax2.legend_.remove()
+ax3.legend_.remove()
+```
+
+#### 移除图例
+
+```PYTHON
+ax3.legend_.remove()
 ```
 
 #### [调整图例位置 ]( https://www.cnblogs.com/IvyWong/p/9916791.html )
