@@ -160,19 +160,30 @@ Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
 
 7. ##### 用显式名称命名字dict
 
-| Type                       | Public             | Internal                                                     |
-| -------------------------- | ------------------ | ------------------------------------------------------------ |
-| Modules                    | lower_with_under   | _lower_with_under                                            |
-| Packages                   | lower_with_under   |                                                              |
-| Classes                    | CapWords           | _CapWords                                                    |
-| Exceptions                 | CapWords           |                                                              |
-| Functions                  | lower_with_under() | _lower_with_under()                                          |
-| Global/Class Constants     | CAPS_WITH_UNDER    | _CAPS_WITH_UNDER                                             |
-| Global/Class Variables     | lower_with_under   | _lower_with_under                                            |
+| Type                       | Public             | Internal                                 |
+| -------------------------- | ------------------ | ---------------------------------------- |
+| Modules                    | lower_with_under   | _lower_with_under                        |
+| Packages                   | lower_with_under   |                                          |
+| Classes                    | CapWords           | _CapWords                                |
+| Exceptions                 | CapWords           |                                          |
+| Functions                  | lower_with_under() | _lower_with_under()                      |
+| Global/Class Constants     | CAPS_WITH_UNDER    | _CAPS_WITH_UNDER                         |
+| Global/Class Variables     | lower_with_under   | _lower_with_under                        |
 | Instance Variables         | lower_with_under   | _lower_with_under (protected) or __lower_with_under (private) |
 | Method Names               | lower_with_under() | _lower_with_under() (protected) or __lower_with_under() (private) |
-| Function/Method Parameters | lower_with_under   |                                                              |
-| Local Variables            | lower_with_under   |                                                              |
+| Function/Method Parameters | lower_with_under   |                                          |
+| Local Variables            | lower_with_under   |                                          |
+
+#### 函数
+
+1. 函数内等号两边不要用空格
+
+   ```PYTHON
+   def function_name(parameter_0, parameter_1='default value')
+   function_name(value_0, parameter_1='value')
+   ```
+
+   ​
 
 #### Main函数
 
@@ -192,24 +203,33 @@ if __name__ == '__main__':
 
 **变量**
 
-| 类型                                          | 含义                                                         |
-| --------------------------------------------- | ------------------------------------------------------------ |
-| `_xxx` 单下划线开头                           | 警告说明这是一个私有变量，原则上外部类不要去访问它           |
-| `__xxx ` 双下划线开头                         | 表示的是私有类型(private)的变量。只能是允许这个类本身进行访问了, 用于命名一个类属性（类变量）。<br />调用时名字被改变（在类Student内部，`__name`变成`_Student__name`,如 `self._Student__name`) |
+| 类型                          | 含义                                       |
+| --------------------------- | ---------------------------------------- |
+| `_xxx` 单下划线开头               | 警告说明这是一个私有变量，原则上外部类不要去访问它                |
+| `__xxx ` 双下划线开头             | 表示的是私有类型(private)的变量。只能是允许这个类本身进行访问了, 用于命名一个类属性（类变量）。<br />调用时名字被改变（在类Student内部，`__name`变成`_Student__name`,如 `self._Student__name`) |
 | `__xxx__`，以双下划线开头，并且以双下划线结尾 | 是内置变量，内置变量是可以直接访问的，不是 private 变量，如`__init__`，`__import__`或是`__file__`。所以，不要自己定义这类变量。 |
-| `xxx_`，单下划线结尾的                        | 一般只是为了避免与 Python 关键字的命名冲突。                 |
-| `USER_CONSTANT`，大写加下划线                 | 对于不会发生改变的全局变量，使用大写加下划线。               |
+| `xxx_`，单下划线结尾的              | 一般只是为了避免与 Python 关键字的命名冲突。               |
+| `USER_CONSTANT`，大写加下划线      | 对于不会发生改变的全局变量，使用大写加下划线。                  |
 
 **函数和方法**
 
-| 类型                                      | 含义                                                         |
-| ----------------------------------------- | ------------------------------------------------------------ |
-| `def _secrete(self):`<br />一个前导下划线 | 私有方法，并不是真正的私有访问权限。<br />同时也应该注意一般函数不要使用两个前导下划线(当遇到两个前导下划线时，Python 的名称改编特性将发挥作用) |
-| `def __add__(self, other):`<br />特殊方法 | 这种风格只应用于特殊函数，比如操作符重载等。                 |
+| 类型                                    | 含义                                       |
+| ------------------------------------- | ---------------------------------------- |
+| `def _secrete(self):`<br />一个前导下划线    | 私有方法，并不是真正的私有访问权限。<br />同时也应该注意一般函数不要使用两个前导下划线(当遇到两个前导下划线时，Python 的名称改编特性将发挥作用) |
+| `def __add__(self, other):`<br />特殊方法 | 这种风格只应用于特殊函数，比如操作符重载等。                   |
 | 函数参数                                  | 小写和下划线，缺省值等号两边无空格<br />def connect(self, user=None):    <br />    self._user = user<br /> |
-|                                           |                                                              |
-|                                           |                                                              |
-|                                           |                                                              |
+
+
+
+#### 导入模块和特定函数
+
+```PYTHON
+import module_name
+import module_name as mn
+from module_name import function_name
+from module_name import function_name as fn
+
+```
 
 
 
@@ -478,22 +498,22 @@ print "str.upper() : ", str.upper()
 
 #### 数字格式化
 
-| 数字       | 格式                                                         | 输出                                         | 描述                         |
-| ---------- | ------------------------------------------------------------ | -------------------------------------------- | ---------------------------- |
-| 3.1415926  | {:.2f}                                                       | 3.14                                         | 保留小数点后两位             |
-| 3.1415926  | {:+.2f}                                                      | +3.14                                        | 带符号保留小数点后两位       |
-| -1         | {:+.2f}                                                      | -1.00                                        | 带符号保留小数点后两位       |
-| 2.71828    | {:.0f}                                                       | 3                                            | 不带小数                     |
-| 5          | {:0>2d}                                                      | 05                                           | 数字补零 (填充左边, 宽度为2) |
-| 5          | {:x<4d}                                                      | 5xxx                                         | 数字补x (填充右边, 宽度为4)  |
-| 10         | {:x<4d}                                                      | 10xx                                         | 数字补x (填充右边, 宽度为4)  |
-| 1000000    | {:,}                                                         | 1,000,000                                    | 以逗号分隔的数字格式         |
-| 0.25       | {:.2%}                                                       | 25.00%                                       | 百分比格式                   |
-| 1000000000 | {:.2e}                                                       | 1.00e+09                                     | 指数记法                     |
-| 13         | {:10d}                                                       | 13                                           | 右对齐 (默认, 宽度为10)      |
-| 13         | {:<10d}                                                      | 13                                           | 左对齐 (宽度为10)            |
-| 13         | {:^10d}                                                      | 13                                           | 中间对齐 (宽度为10)          |
-| 11         | `{:b}`.format(11) <br/>`{:d}`.format(11) <br/>`{:o}`.format(11) <br/>`{:x}`.format(11) <br/>`{:#x}`.format(11) <br/>`{:#X}`.format(11) | 1011 <br/>11 <br/>13 <br/>b<br/>0xb <br/>0XB | 进制                         |
+| 数字         | 格式                                       | 输出                                       | 描述                |
+| ---------- | ---------------------------------------- | ---------------------------------------- | ----------------- |
+| 3.1415926  | {:.2f}                                   | 3.14                                     | 保留小数点后两位          |
+| 3.1415926  | {:+.2f}                                  | +3.14                                    | 带符号保留小数点后两位       |
+| -1         | {:+.2f}                                  | -1.00                                    | 带符号保留小数点后两位       |
+| 2.71828    | {:.0f}                                   | 3                                        | 不带小数              |
+| 5          | {:0>2d}                                  | 05                                       | 数字补零 (填充左边, 宽度为2) |
+| 5          | {:x<4d}                                  | 5xxx                                     | 数字补x (填充右边, 宽度为4) |
+| 10         | {:x<4d}                                  | 10xx                                     | 数字补x (填充右边, 宽度为4) |
+| 1000000    | {:,}                                     | 1,000,000                                | 以逗号分隔的数字格式        |
+| 0.25       | {:.2%}                                   | 25.00%                                   | 百分比格式             |
+| 1000000000 | {:.2e}                                   | 1.00e+09                                 | 指数记法              |
+| 13         | {:10d}                                   | 13                                       | 右对齐 (默认, 宽度为10)   |
+| 13         | {:<10d}                                  | 13                                       | 左对齐 (宽度为10)       |
+| 13         | {:^10d}                                  | 13                                       | 中间对齐 (宽度为10)      |
+| 11         | `{:b}`.format(11) <br/>`{:d}`.format(11) <br/>`{:o}`.format(11) <br/>`{:x}`.format(11) <br/>`{:#x}`.format(11) <br/>`{:#X}`.format(11) | 1011 <br/>11 <br/>13 <br/>b<br/>0xb <br/>0XB | 进制                |
 
 ^, <, > 分别是居中、左对齐、右对齐，后面带宽度， : 号后面带填充的字符，只能是一个字符，不指定则默认是用空格填充。
 
@@ -994,7 +1014,15 @@ first_names, last_names = zip(*pitchers)
 
 ## 函数
 
-#### 关键字参数，位置参数 *args、 **kwargs
+#### 形参、实参
+
+形参：函数定义中的变量名
+
+实参：传递给参数的参数值
+
+
+
+#### 传递任意数量位置实参，关键字实参 *args、 **kwargs
 
 位置参数(`*args`)：被打包成元组
 
@@ -1002,15 +1030,27 @@ first_names, last_names = zip(*pitchers)
 
 ```PYTHON
 def say_hello_then_call_f(f, *args, **kwargs):
-```
+"""
     传入args和kwargs给f这个函数，并且输出他的值和两种参数
-    ```
+"""
     print 'args is', args
     pring 'kwargs is', kwargs
     print("Hello! Now I'm going to call %s" % f)
     return f(*args, **kwargs)
+```
+
+
+
+#### 传递列表给函数
+
+* 传递列表给参数时，函数直接对原列表进行修改
+* 如果禁止函数修改列表，传入列表副本`list[:]`即可，但不建议这么做，耗费资源
+
+
+
 
 #### 定义函数
+
 ```PYTHON
 def g(x, y, z=1):
     return (x+y)/z
@@ -1051,6 +1091,49 @@ def clean_strings(strings, ops):
         result.append(value)
     return result
 ```
+
+
+
+### 类
+
+#### 创建类 
+
+* `__init__()`初始化方法，实例化时候自动运行
+* 带有前缀 `self` 的变量可通过实例访问，被称为`属性`
+* ​
+
+```PYTHON
+class Dog():
+    """
+    类的说明
+    """
+    
+    # init初始化方法，实例化时候自动运行
+    def __init__(self, name, age):  
+        """
+        初始化属性name和age
+        """
+        self.name = name  # 类的属性
+        self.age = age
+        
+    # 类的方法1
+    def sit(self):
+        """
+        模拟小狗被命令时蹲下
+        """
+        print(self.name.title() + "is now sitting.")
+    
+    # 类的方法2
+    def roll_over(self):
+        """
+        模拟小狗被命令时打滚
+        """
+        print(self.name.title() + "rolled over!")
+```
+
+
+
+
 
 ## 异常处理
 
@@ -1528,31 +1611,31 @@ DataFrame.select_dtypes(*self*, *include=None*, *exclude=None*)
 
 `orient` : string;  Indication of expected JSON string format.
 
-   - Series
-   
-       - default is ‘index’
-       - allowed values are: {‘split’,’records’,’index’,’table’}
-   
-   - DataFrame
-   
-       - default is ‘columns’
-       - allowed values are: {‘split’,’records’,’index’,’columns’,’values’,’table’}
-   
-   - The format of the JSON string
-   
-       - ‘split’ : dict like {‘index’ -> [index], ‘columns’ -> [columns], ‘data’ -> [values]}
-       
-       - ‘records’ : list like [{column -> value}, … , {column -> value}]
-       
-       - ‘index’ : dict like {index -> {column -> value}}
-       
-       - ‘columns’ : dict like {column -> {index -> value}}
-       
-       - ‘values’ : just the values array
-       
-       - ‘table’ : dict like {‘schema’: {schema}, ‘data’: {data}} describing the data, and the data component is like `orient='records'`.
-       
-           *Changed in version 0.20.0.*
+-    Series
+
+     - default is ‘index’
+     - allowed values are: {‘split’,’records’,’index’,’table’}
+
+-    DataFrame
+
+     - default is ‘columns’
+     - allowed values are: {‘split’,’records’,’index’,’columns’,’values’,’table’}
+
+-    The format of the JSON string
+
+     - ‘split’ : dict like {‘index’ -> [index], ‘columns’ -> [columns], ‘data’ -> [values]}
+
+     - ‘records’ : list like [{column -> value}, … , {column -> value}]
+
+     - ‘index’ : dict like {index -> {column -> value}}
+
+     - ‘columns’ : dict like {column -> {index -> value}}
+
+     - ‘values’ : just the values array
+
+     - ‘table’ : dict like {‘schema’: {schema}, ‘data’: {data}} describing the data, and the data component is like `orient='records'`.
+
+         *Changed in version 0.20.0.*
 
 `index` : bool, default True
 
@@ -1679,26 +1762,26 @@ data[np.abs(data) > 3] = np.sign(data)*3
 
 #### interval 属性
 
-|Attributes||
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| Attributes                               |                                          |
+| ---------------------------------------- | ---------------------------------------- |
 | [`closed`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed.html#pandas.Interval.closed) | Whether the interval is closed on the left-side, right-side, both or neither |
-| [`closed_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_left.html#pandas.Interval.closed_left) | Check if the interval is closed on the left side.            |
-| [`closed_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_right.html#pandas.Interval.closed_right) | Check if the interval is closed on the right side.           |
+| [`closed_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_left.html#pandas.Interval.closed_left) | Check if the interval is closed on the left side. |
+| [`closed_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_right.html#pandas.Interval.closed_right) | Check if the interval is closed on the right side. |
 | [`is_empty`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.is_empty.html#pandas.Interval.is_empty) | Indicates if an interval is empty, meaning it contains no points. |
-| [`left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.left.html#pandas.Interval.left) | Left bound for the interval                                  |
-| [`length`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.length.html#pandas.Interval.length) | Return the length of the Interval                            |
-| [`mid`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.mid.html#pandas.Interval.mid) | Return the midpoint of the Interval                          |
-| [`open_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_left.html#pandas.Interval.open_left) | Check if the interval is open on the left side.              |
-| [`open_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_right.html#pandas.Interval.open_right) | Check if the interval is open on the right side.             |
-| [`right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.right.html#pandas.Interval.right) | Right bound for the interval                                 |
+| [`left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.left.html#pandas.Interval.left) | Left bound for the interval              |
+| [`length`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.length.html#pandas.Interval.length) | Return the length of the Interval        |
+| [`mid`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.mid.html#pandas.Interval.mid) | Return the midpoint of the Interval      |
+| [`open_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_left.html#pandas.Interval.open_left) | Check if the interval is open on the left side. |
+| [`open_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_right.html#pandas.Interval.open_right) | Check if the interval is open on the right side. |
+| [`right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.right.html#pandas.Interval.right) | Right bound for the interval             |
 
 #### 连续变量分段 pd.cut()
 
-| 参数      | 说明     |
-| --------- | -------- |
-| right     |          |
-| labels    |          |
-| precision |          |
+| 参数        | 说明   |
+| --------- | ---- |
+| right     |      |
+| labels    |      |
+| precision |      |
 | rebins    | 返回分组 |
 
 ```PYTHON
@@ -1939,11 +2022,11 @@ df2[criterion & (df2['b'] == 'x')]
 * 返回筛选结果并维持原dataframe大小
 * 可以替换dataframe中不满足条件的值
 
-| 参数    | 作用                                                        |
-| ------- | ----------------------------------------------------------- |
-| inplace | True, 不返回一个copy, 直接在原dataframe上改动               |
+| 参数      | 作用                                 |
+| ------- | ---------------------------------- |
+| inplace | True, 不返回一个copy, 直接在原dataframe上改动  |
 | axis    | 选择要对齐的轴，当需要指定dataframe中某列或某行作为替换值时 |
-| level   | alignment level                                             |
+| level   | alignment level                    |
 
 ```PYTHON
 df.where(df < 0, -df)
@@ -1993,21 +2076,21 @@ df[(df.a < df.b) & (df.b < df.c)]  # 传统方法
 * 任何将Series降维到scalar的函数都可以看作agg函数，比如` df.groupby('A').agg(lambda ser: 1) `
 * `agg`和`apply`的区别在于，`agg`是传入一列数据返回一个标量，而`apply`是将一组数据全部传入，可以返回多维结果
 
-| Function     | Description                                |
-| :----------- | :----------------------------------------- |
-| `mean()`     | Compute mean of groups                     |
-| `sum()`      | Compute sum of group values                |
-| `size()`     | Compute group sizes                        |
-| `count()`    | Compute count of group                     |
-| `std()`      | Standard deviation of groups               |
-| `var()`      | Compute variance of groups                 |
-| `sem()`      | Standard error of the mean of groups       |
-| `describe()` | Generates descriptive statistics           |
-| `first()`    | Compute first of group values              |
-| `last()`     | Compute last of group values               |
+| Function     | Description                              |
+| :----------- | :--------------------------------------- |
+| `mean()`     | Compute mean of groups                   |
+| `sum()`      | Compute sum of group values              |
+| `size()`     | Compute group sizes                      |
+| `count()`    | Compute count of group                   |
+| `std()`      | Standard deviation of groups             |
+| `var()`      | Compute variance of groups               |
+| `sem()`      | Standard error of the mean of groups     |
+| `describe()` | Generates descriptive statistics         |
+| `first()`    | Compute first of group values            |
+| `last()`     | Compute last of group values             |
 | `nth()`      | Take nth value, or a subset if n is a list |
-| `min()`      | Compute min of group values                |
-| `max()`      | Compute max of group values                |
+| `min()`      | Compute min of group values              |
+| `max()`      | Compute max of group values              |
 
 #### 调用自己得聚合函数 DataFrame.GroupBy.agg  
 
@@ -2336,17 +2419,17 @@ caller.join(other.set_index('key'), on='key')
 
 直接将两个dataframe或者series进行纵向连接或者横向连接
 
-| 参数             | 说明                                                         |
-| ---------------- | ------------------------------------------------------------ |
-| objs             | 参与连接的series, dict, dataframe                            |
-| axis             | 连接方向 {0 index, 1 columns}                                |
-| join             | {‘inner’, ‘outer’}, default ‘outer’                          |
+| 参数               | 说明                                       |
+| ---------------- | ---------------------------------------- |
+| objs             | 参与连接的series, dict, dataframe             |
+| axis             | 连接方向 {0 index, 1 columns}                |
+| join             | {‘inner’, ‘outer’}, default ‘outer’      |
 | join_axes        | list of Index objects  <br> Specific indexes to use for the other n - 1 axes instead of performing inner/outer set logic <br> 指定其他轴上面参与连接的索引 |
 | ignore_index     | 不保留原连接轴上的索引，用一组新索引代替                     |
-| keys             | 用于形成层次化索引                                           |
-| levels           | 设置了kets的情况下，指定层次化索引的level                    |
-| names            | 设置层次化索引的名称                                         |
-| verify_integrity | 检查结果对象新轴上的重复情况                                 |
+| keys             | 用于形成层次化索引                                |
+| levels           | 设置了kets的情况下，指定层次化索引的level                |
+| names            | 设置层次化索引的名称                               |
+| verify_integrity | 检查结果对象新轴上的重复情况                           |
 | sort             | Sort non-concatenation axis if it is not already aligned when join is ‘outer’. The current default of sorting is deprecated and will change to not-sorting in a future version of pandas. |
 
 ```PYTHON
@@ -2581,98 +2664,98 @@ DataFrame.sort_values(self, by, axis=0, ascending=True, inplace=False, kind='qui
 
 more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more-149d341fc53e>
 
-| **SQL**                                        | **Pandas**                              |
-| ---------------------------------------------- | --------------------------------------- |
-| select   * from airports                       | airports                                |
-| select   * from airports limit 3               | airports.head(3)                        |
+| **SQL**                                  | **Pandas**                              |
+| ---------------------------------------- | --------------------------------------- |
+| select   * from airports                 | airports                                |
+| select   * from airports limit 3         | airports.head(3)                        |
 | select   id from airports where ident = ‘KLAX’ | airports[airports.ident   == ‘KLAX’].id |
-| select   distinct type from airport            | airports.type.unique()                  |
+| select   distinct type from airport      | airports.type.unique()                  |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   * from airports where iso_region = ‘US-CA’ and type = ‘seaplane_base’ | airports[(airports.iso_region   == ‘US-CA’) & (airports.type == ‘seaplane_base’)] |
 | select   ident, name, municipality from airports where iso_region = ‘US-CA’ and type =   ‘large_airport’ | airports[(airports.iso_region   == ‘US-CA’) & (airports.type == ‘large_airport’)][[‘ident’, ‘name’,   ‘municipality’]] |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   * from airport_freq where airport_ident = ‘KLAX’ order by type | airport_freq[airport_freq.airport_ident == ‘KLAX’].sort_values(‘type’) |
 | select   * from airport_freq where airport_ident = ‘KLAX’ order by type desc | airport_freq[airport_freq.airport_ident   == ‘KLAX’].sort_values(‘type’, ascending=False) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| select   * from airports where type in (‘heliport’, ‘balloonport’) | airports[airports.type.isin([‘heliport’,   ‘balloonport’])]  |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| select   * from airports where type in (‘heliport’, ‘balloonport’) | airports[airports.type.isin([‘heliport’,   ‘balloonport’])] |
 | select   * from airports where type not in (‘heliport’, ‘balloonport’) | airports[~airports.type.isin([‘heliport’,   ‘balloonport’])] |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, type | airports.groupby([‘iso_country’,   ‘type’]).size()           |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, type | airports.groupby([‘iso_country’,   ‘type’]).size() |
 | select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, count(*) desc | airports.groupby([‘iso_country’,   ‘type’]).size().to_frame(‘size’).reset_index().sort_values([‘iso_country’,   ‘size’], ascending=[True, False]) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, type | airports.groupby([‘iso_country’,   ‘type’]).size()           |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, type | airports.groupby([‘iso_country’,   ‘type’]).size() |
 | select   iso_country, type, count(*) from airports group by iso_country, type order by   iso_country, count(*) desc | airports.groupby([‘iso_country’,   ‘type’]).size().to_frame(‘size’).reset_index().sort_values([‘iso_country’,   ‘size’], ascending=[True, False]) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   type, count(*) from airports where iso_country = ‘US’ group by type having   count(*) > 1000 order by count(*) desc | airports[airports.iso_country   == ‘US’].groupby(‘type’).filter(lambda g: len(g) >   1000).groupby(‘type’).size().sort_values(ascending=False) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                  |
-| ------------------------------------------------------------ | ----------------------------------------------------------- |
-| select   iso_country from by_country order by size desc limit 10 | by_country.nlargest(10,   columns=’airport_count’)          |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| select   iso_country from by_country order by size desc limit 10 | by_country.nlargest(10,   columns=’airport_count’) |
 | select   iso_country from by_country order by size desc limit 10 offset 10 | by_country.nlargest(20,   columns=’airport_count’).tail(10) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   max(length_ft), min(length_ft), mean(length_ft), median(length_ft) from   runways | runways.agg({‘length_ft’:   [‘min’, ‘max’, ‘mean’, ‘median’]}) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   airport_ident, type, description, frequency_mhz from airport_freq join   airports on airport_freq.airport_ref = airports.id where airports.ident =   ‘KLAX’ | airport_freq.merge(airports[airports.ident   == ‘KLAX’][[‘id’]], left_on=’airport_ref’, right_on=’id’,   how=’inner’)[[‘airport_ident’, ‘type’, ‘description’, ‘frequency_mhz’]] |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | select   name, municipality from airports where ident = ‘KLAX’ union all select name,   municipality from airports where ident = ‘KLGB’ | pd.concat([airports[airports.ident   == ‘KLAX’][[‘name’, ‘municipality’]], airports[airports.ident ==   ‘KLGB’][[‘name’, ‘municipality’]]]) |
 
 
 
-| **SQL**                                              | **Pandas**                                                   |
-| ---------------------------------------------------- | ------------------------------------------------------------ |
-| create   table heroes (id integer, name text);       | df1   = pd.DataFrame({‘id’: [1, 2], ‘name’: [‘Harry Potter’, ‘Ron Weasley’]}) |
-| insert   into heroes values (1, ‘Harry Potter’);     | df2   = pd.DataFrame({‘id’: [3], ‘name’: [‘Hermione Granger’]}) |
-| insert   into heroes values (2, ‘Ron Weasley’);      |                                                              |
-| insert   into heroes values (3, ‘Hermione Granger’); | pd.concat([df1,   df2]).reset_index(drop=True)               |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| create   table heroes (id integer, name text); | df1   = pd.DataFrame({‘id’: [1, 2], ‘name’: [‘Harry Potter’, ‘Ron Weasley’]}) |
+| insert   into heroes values (1, ‘Harry Potter’); | df2   = pd.DataFrame({‘id’: [3], ‘name’: [‘Hermione Granger’]}) |
+| insert   into heroes values (2, ‘Ron Weasley’); |                                          |
+| insert   into heroes values (3, ‘Hermione Granger’); | pd.concat([df1,   df2]).reset_index(drop=True) |
 
 
 
-| **SQL**                                                      | **Pandas**                                                   |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
 | update airports set home_link = ‘<http://www.lawa.org/welcomelax.aspx>’ where ident == ‘KLAX’ | airports.loc[airports[‘ident’] == ‘KLAX’,   ‘home_link’] = ‘<http://www.lawa.org/welcomelax.aspx>’ |
 
-| **SQL**                                    | **Pandas**                                               |
-| ------------------------------------------ | -------------------------------------------------------- |
-| delete   from lax_freq where type = ‘MISC’ | lax_freq   = lax_freq[lax_freq.type != ‘MISC’]           |
-|                                            | lax_freq.drop(lax_freq[lax_freq.type   == ‘MISC’].index) |
+| **SQL**                                  | **Pandas**                               |
+| ---------------------------------------- | ---------------------------------------- |
+| delete   from lax_freq where type = ‘MISC’ | lax_freq   = lax_freq[lax_freq.type != ‘MISC’] |
+|                                          | lax_freq.drop(lax_freq[lax_freq.type   == ‘MISC’].index) |
 
 # Numpy
 
@@ -3078,8 +3161,8 @@ ax.spines['left'].set_position(('data',0))
 
 #### 设置坐标轴标签
 
-| 类型              | 说明                                                         |
-| :---------------- | :----------------------------------------------------------- |
+| 类型                | 说明                                       |
+| :---------------- | :--------------------------------------- |
 | `NullLocator`     | No ticks. ![img](assets/1540012569-1664-ticks-NullLocator.png) |
 | `IndexLocator`    | Place a tick on every multiple of some base number of points plotted. ![img](assets/1540012569-4591-ticks-IndexLocator.png) |
 | `FixedLocator`    | Tick locations are fixed. ![img](assets/1540012569-6368-ticks-FixedLocator.png) |
@@ -3547,22 +3630,22 @@ annotate(r'$\cos(\frac{2\pi}{3})=-\frac{1}{2}$',
 
 #### [参数说明]( https://github.com/pandas-dev/pandas/blob/v0.25.3/pandas/plotting/_core.py#L504-L1533 )
 
-| callable method                                              |                                                              |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.html#pandas.DataFrame.plot)([x, y, kind, ax, ….]) | DataFrame plotting accessor and method                       |
-| [`DataFrame.plot.area`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.area.html#pandas.DataFrame.plot.area)(self[, x, y]) | Draw a stacked area plot.                                    |
-| [`DataFrame.plot.bar`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.bar.html#pandas.DataFrame.plot.bar)(self[, x, y]) | Vertical bar plot.                                           |
-| [`DataFrame.plot.barh`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.barh.html#pandas.DataFrame.plot.barh)(self[, x, y]) | Make a horizontal bar plot.                                  |
-| [`DataFrame.plot.box`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.box.html#pandas.DataFrame.plot.box)(self[, by]) | Make a box plot of the DataFrame columns.                    |
+| callable method                          |                                          |
+| ---------------------------------------- | ---------------------------------------- |
+| [`DataFrame.plot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.html#pandas.DataFrame.plot)([x, y, kind, ax, ….]) | DataFrame plotting accessor and method   |
+| [`DataFrame.plot.area`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.area.html#pandas.DataFrame.plot.area)(self[, x, y]) | Draw a stacked area plot.                |
+| [`DataFrame.plot.bar`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.bar.html#pandas.DataFrame.plot.bar)(self[, x, y]) | Vertical bar plot.                       |
+| [`DataFrame.plot.barh`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.barh.html#pandas.DataFrame.plot.barh)(self[, x, y]) | Make a horizontal bar plot.              |
+| [`DataFrame.plot.box`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.box.html#pandas.DataFrame.plot.box)(self[, by]) | Make a box plot of the DataFrame columns. |
 | [`DataFrame.plot.density`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.density.html#pandas.DataFrame.plot.density)(self[, bw_method, ind]) | Generate Kernel Density Estimate plot using Gaussian kernels. |
-| [`DataFrame.plot.hexbin`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hexbin.html#pandas.DataFrame.plot.hexbin)(self, x, y[, C, …]) | Generate a hexagonal binning plot.                           |
-| [`DataFrame.plot.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hist.html#pandas.DataFrame.plot.hist)(self[, by, bins]) | Draw one histogram of the DataFrame’s columns.               |
+| [`DataFrame.plot.hexbin`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hexbin.html#pandas.DataFrame.plot.hexbin)(self, x, y[, C, …]) | Generate a hexagonal binning plot.       |
+| [`DataFrame.plot.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.hist.html#pandas.DataFrame.plot.hist)(self[, by, bins]) | Draw one histogram of the DataFrame’s columns. |
 | [`DataFrame.plot.kde`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.kde.html#pandas.DataFrame.plot.kde)(self[, bw_method, ind]) | Generate Kernel Density Estimate plot using Gaussian kernels. |
-| [`DataFrame.plot.line`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html#pandas.DataFrame.plot.line)(self[, x, y]) | Plot Series or DataFrame as lines.                           |
-| [`DataFrame.plot.pie`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.pie.html#pandas.DataFrame.plot.pie)(self, \*\*kwargs) | Generate a pie plot.                                         |
+| [`DataFrame.plot.line`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.line.html#pandas.DataFrame.plot.line)(self[, x, y]) | Plot Series or DataFrame as lines.       |
+| [`DataFrame.plot.pie`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.pie.html#pandas.DataFrame.plot.pie)(self, \*\*kwargs) | Generate a pie plot.                     |
 | [`DataFrame.plot.scatter`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.plot.scatter.html#pandas.DataFrame.plot.scatter)(self, x, y[, s, c]) | Create a scatter plot with varying marker point size and color. |
-| [`DataFrame.boxplot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.boxplot.html#pandas.DataFrame.boxplot)(self[, column, by, ax, …]) | Make a box plot from DataFrame columns.                      |
-| [`DataFrame.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html#pandas.DataFrame.hist)(data[, column, by, grid, …]) | Make a histogram of the DataFrame’s.                         |
+| [`DataFrame.boxplot`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.boxplot.html#pandas.DataFrame.boxplot)(self[, column, by, ax, …]) | Make a box plot from DataFrame columns.  |
+| [`DataFrame.hist`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.hist.html#pandas.DataFrame.hist)(data[, column, by, grid, …]) | Make a histogram of the DataFrame’s.     |
 
 
 
