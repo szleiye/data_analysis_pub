@@ -147,10 +147,18 @@ Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
 #### 命名
 
 1. 所谓”内部(Internal)”表示仅模块内可用, 或者, 在类内是保护或私有的.
+
 2. 用单下划线(_)开头表示模块变量或函数是protected的(使用from module import *时不会包含).
+
 3. 用双下划线(__)开头的实例变量或方法表示类内私有.
+
 4. 将相关的类和顶级函数放在同一个模块里. 不像Java, 没必要限制一个类一个模块.
+
 5. 对类名使用大写字母开头的单词(如CapWords, 即Pascal风格), 但是模块名应该用小写加下划线的方式(如lower_with_under.py). 尽管已经有很多现存的模块使用类似于CapWords.py这样的命名, 但现在已经不鼓励这样做, 因为如果模块名碰巧和类名一致, 这会让人困扰.
+
+6. ##### 用复数形式命名list
+
+7. ##### 用显式名称命名字dict
 
 | Type                       | Public             | Internal                                                     |
 | -------------------------- | ------------------ | ------------------------------------------------------------ |
@@ -182,9 +190,32 @@ if __name__ == '__main__':
 
 #### [python中带下划线的变量和函数的意义](https://www.cnblogs.com/elie/p/5902995.html)
 
-```python
+**变量**
 
-```
+| 类型                                          | 含义                                                         |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `_xxx` 单下划线开头                           | 警告说明这是一个私有变量，原则上外部类不要去访问它           |
+| `__xxx ` 双下划线开头                         | 表示的是私有类型(private)的变量。只能是允许这个类本身进行访问了, 用于命名一个类属性（类变量）。<br />调用时名字被改变（在类Student内部，`__name`变成`_Student__name`,如 `self._Student__name`) |
+| `__xxx__`，以双下划线开头，并且以双下划线结尾 | 是内置变量，内置变量是可以直接访问的，不是 private 变量，如`__init__`，`__import__`或是`__file__`。所以，不要自己定义这类变量。 |
+| `xxx_`，单下划线结尾的                        | 一般只是为了避免与 Python 关键字的命名冲突。                 |
+| `USER_CONSTANT`，大写加下划线                 | 对于不会发生改变的全局变量，使用大写加下划线。               |
+
+**函数和方法**
+
+| 类型                                      | 含义                                                         |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| `def _secrete(self):`<br />一个前导下划线 | 私有方法，并不是真正的私有访问权限。<br />同时也应该注意一般函数不要使用两个前导下划线(当遇到两个前导下划线时，Python 的名称改编特性将发挥作用) |
+| `def __add__(self, other):`<br />特殊方法 | 这种风格只应用于特殊函数，比如操作符重载等。                 |
+| 函数参数                                  | 小写和下划线，缺省值等号两边无空格<br />def connect(self, user=None):    <br />    self._user = user<br /> |
+|                                           |                                                              |
+|                                           |                                                              |
+|                                           |                                                              |
+
+
+
+
+
+
 
 
 
@@ -347,8 +378,6 @@ print(C)  # 结果 [1, 1, 2, 3]
 
 
 
-
-
 ## if 语句
 
 #### 三元表达式
@@ -474,6 +503,22 @@ b、d、o、x 分别是二进制、十进制、八进制、十六进制。
 
 此外我们可以使用大括号 {} 来转义大括号，如下实例：
 
+
+
+#### 换行符和制表符  /n  /t
+
+
+
+#### 接受用户输入 input()
+
+如果需要接受数值型输入，用 int() 对接受到的变量进行转换
+
+```PYTHON
+name = input(prompt)  # prompt 中储存提示语句，输入变量存在name中
+```
+
+
+
 ## 面向对象方法
 
 #### [更新对象绑定的方法](<https://www.jb51.net/article/109409.htm>)
@@ -529,6 +574,8 @@ print(azip.namelist())
 
 ## 列表 list
 
+
+
 #### 一次加入多个元素 .extend()
 
 ```python
@@ -538,11 +585,15 @@ for suit in ['H', 'S', 'C', 'D']:
     cards.extend(str(num) + suit for num in base_names)
 ```
 
+
+
 #### 添加元素到列表末尾 append()
 
 ```PYTHON
 b_list.append('dwarf')
 ```
+
+
 
 #### 添加元素到指定位置 insert()
 
@@ -550,17 +601,80 @@ b_list.append('dwarf')
 b_list.insert(1, 'red')
 ```
 
+
+
 #### 移除并返回指定索引处的元素 pop()
 
 ```PYTHON
 b_list.pop(2)
 ```
 
+
+
 #### 按值删除元素 remove()
 
 ```PYTHON
 b_list.remove('foo')
 ```
+
+
+
+#### 列表切片
+
+```PYTHON
+# 正常取
+players[0:3]
+
+# 从列表开头开始取
+players[:4]
+
+# 取到列表末尾
+players[2:]
+
+# 取最后三个元素
+players[-3:]
+```
+
+
+
+#### 列表永久排序 sort()
+
+```PYTHON
+cars.sort(reverser=True)
+```
+
+
+
+#### 列表临时排序 sorted()
+
+```PYTHON
+sorted(cars)
+```
+
+
+
+
+
+#### 列表临时排序 sorted()
+
+
+
+#### 复制列表
+
+```PYTHON
+my_foods = ['pizza'. 'falafel', 'carrot cake']
+friend_foods = my_foods[:]  # 复制列表
+```
+
+
+
+#### 生成数字列表 list + range
+
+```python
+list(range(1, 11))
+```
+
+
 
 #### 判断列表中是否含有某个值
 
@@ -570,7 +684,9 @@ b_list.remove('foo')
 'dwarf' in b_list
 ```
 
-#### 合并列表
+
+
+#### 合并列表 extend/+
 
 列表的合并是一种费资源的操作，因为要创建新列表将所有对象复制过去
 
@@ -584,13 +700,53 @@ b_list.remove('foo')
 x.extend([7, 8, (2, 3)])
 ```
 
+
+
 #### 列表、集合以及字典的推导式
 
 ```python
 [x.upper() for x in strings if len(x) > 2]
 ```
 
+
+
+
+
 ## 字典 dict
+
+#### 遍历字典的键值对 dict.items()
+
+遍历输出结果不一定按原顺序，字典只关心键值对，不关心排序
+
+```PYTHON
+for key, value in user_0.items():
+    print("\nKey: ", key)
+    print("Value: ", value)    
+```
+
+
+
+#### 遍历字典中的键 dict.keys()
+
+dict.keys() 返回字典所有键值的一个列表
+
+```python
+for name in favorite_languages.keys():
+    print(name.title())
+```
+
+
+
+#### 遍历字典中的值 dict.values()
+
+返回一个值列表
+
+```PYTHON
+for language in set(favorite_languages.values()):  # 用set去重
+    print(language.title())
+```
+
+
 
 #### 取指定键的值，没有则返回默认值 dict.get()
 
@@ -661,6 +817,41 @@ by_letter = defaultdict(list)
 for word in words:
     by_letter[word[0]].append(word)
 ```
+
+#### 列表中嵌套字典
+
+例子：列表储存一群外星人，嵌套字典代表每个外星人的信息
+
+```PYTHON
+
+```
+
+
+
+#### 字典中嵌套列表
+
+```PYTHON
+favorite_languages = {
+    'jen': ['python', 'ruby'],
+    'sarah': ['c'],
+    'edward': ['ruby', 'go'],
+    'phil': ['python', 'haskell']
+}
+
+# 双重循环输出列表内容
+for name, languages in favorite_languages.items():
+    pass
+	for language in languages:
+        pass
+```
+
+
+
+####  字典嵌套字典
+
+
+
+
 
 ## 集合 set
 
