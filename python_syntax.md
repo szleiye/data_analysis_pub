@@ -183,7 +183,7 @@ Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
    function_name(value_0, parameter_1='value')
    ```
 
-   ​
+   
 
 #### Main函数
 
@@ -1100,7 +1100,7 @@ def clean_strings(strings, ops):
 
 * `__init__()`初始化方法，实例化时候自动运行
 * 带有前缀 `self` 的变量可通过实例访问，被称为`属性`
-* ​
+* 
 
 ```PYTHON
 class Dog():
@@ -1129,6 +1129,55 @@ class Dog():
         模拟小狗被命令时打滚
         """
         print(self.name.title() + "rolled over!")
+```
+
+
+
+#### 继承
+
+```PYTHON
+
+# 父类要在子类之前
+class Car():
+    pass
+
+class ElectricCar(Car):  # 定义子类，括号内指定父类名称
+    """
+    电动汽车的独特之处
+    """
+    
+    def __init__(self, make, modelm year):  # init方法要提供创建父类实例所需信息
+        """
+        初始化父类的属性
+        """
+        super().__init__(make, model, year)  # 让实例包含父类所有属性
+        
+my_tesla = ElectriCar('tesla', 'model s', 2016)
+print(my_tesla.get_descriptive_name())
+```
+
+#### 重写父类的方法
+
+父类中如果一些方法不合适，可以在子类中直接重写。子类中写一个名称一样的方法即可
+
+
+
+#### 将实例用作属性
+
+如果类属性和方法太复杂，可将类的一部分作为一个实例的类提取出来，拆分成协同工作的小类。
+
+例如，可将ElectriCar类中关于电池的部分提取出来，放到Battery类中
+
+```PYTHON
+class Battery():
+    -snip-
+
+class ElectricCar(Car):
+    """
+    """
+    
+    def __init__(self)
+    	self.battery = Battery
 ```
 
 
