@@ -8,38 +8,6 @@ pandas-profiling: 一键生成EDA报告
 
 
 
-## Python 模块的标准文件写法
-
-* **第1行、第2行：**
-
-  标准注释，第1行注释可以让这个`hello.py`文件直接在Unix/Linux/Mac上运行，第2行注释表示`.py`文件本身使用标准`UTF-8`编码；
-
-* **第4行：**
-
-  是一个字符串，表示模块的文档注释，任何模块代码的第一个字符串都被视为模块的文档注释；
-
-* **第6行：**
-
-  使用`__author__`变量把作者写进去，这样当你公开源代码后别人就可以瞻仰你的大名；
-
-```python
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-' a test module '
-__author__ = 'Michael Liao'
-import sys
-def test():
-    args = sys.argv
-    if len(args)==1:
-    	print('Hello, world!')
-    elif len(args)==2:
-    	print('Hello, %s!' % args[1])
-    else:
-    	print('Too many arguments!')
-if __name__=='__main__':
-	test()
-```
-
 
 
 ## [python风格规范](<https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/>)
@@ -183,7 +151,8 @@ Yes: def complex(real, imag=0.0): return magic(r=real, i=imag)
    function_name(value_0, parameter_1='value')
    ```
 
-   
+
+
 
 #### Main函数
 
@@ -196,6 +165,68 @@ def main():
 if __name__ == '__main__':
     main()
 ```
+
+
+
+#### 模块的标准文件写法
+
+- **第1行、第2行：**
+
+  标准注释，第1行注释可以让这个`hello.py`文件直接在Unix/Linux/Mac上运行，第2行注释表示`.py`文件本身使用标准`UTF-8`编码；
+
+- **第4行：**
+
+  是一个字符串，表示模块的文档注释，任何模块代码的第一个字符串都被视为模块的文档注释；
+
+- **第6行：**
+
+  使用`__author__`变量把作者写进去，这样当你公开源代码后别人就可以瞻仰你的大名；
+
+```python
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+' a test module '
+__author__ = 'Michael Liao'
+import sys
+def test():
+    args = sys.argv
+    if len(args)==1:
+    	print('Hello, world!')
+    elif len(args)==2:
+    	print('Hello, %s!' % args[1])
+    else:
+    	print('Too many arguments!')
+if __name__=='__main__':
+	test()
+```
+
+
+
+#### 函数说明写法
+
+```PYTHON
+def _validate_names(names):
+    """
+    Check if the `names` parameter contains duplicates.
+    If duplicates are found, we issue a warning before returning.
+    Parameters
+    ----------
+    names : array-like or None
+        An array containing a list of the names used for the output DataFrame.
+    Returns
+    -------
+    names : array-like or None
+        The original `names` parameter.
+    """
+
+    if names is not None:
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate names are not allowed.")
+    return names
+
+```
+
+
 
 ## python 基础
 
@@ -263,6 +294,8 @@ path1=os.path.abspath('.')
 path1=os.path.abspath('..')
 ```
 
+
+
 #### 绝对路径和相对路径写法
 
 
@@ -273,6 +306,8 @@ open('aaa.txt')
 open('/data/bbb.txt')
 open('D:\\user\\ccc.txt')
 ```
+
+
 
 #### 判断文件是否存在 os.path.isfile() 
 
@@ -285,14 +320,75 @@ else:
 
 
 
+#### 逐行读取
+
+```PYTHON
+filename = 'pd_digits.txt'
+
+with open(filename) as file_object:
+    for line in file_object:
+        print(line.rstrip())
+```
+
+
+
+#### 将文件内容存成列表稍后处理 readlines()
+
+```python
+filename = 'pd_digits.txt'
+
+with open(filename) as file_object:
+    lines = file_object.readlines()  # 存成列表，后面调用
+    
+for line in lines:  # 调用之前储存的文件内容
+    print(line.rstrip())
+```
+
+####  
+
+#### 读取整个文件 with open()
+
+open(): 表示打开文件
+
+with: 在不需要访问文件后将其关闭，替代close() 
+
+```PYTHON
+with open('pi_digits.txt') as file_object:
+    contents = file_object.read()
+    print(contents)
+```
+
+
+
 ## 数据写入
+
+#### 写入空文件
+
+`r`: 只读模型，默认
+
+`r+`: 可以读取和写入
+
+`w`: 写入模式，只能写入字符串
+
+`a`: 附加模式
+
+```PYTHON
+filename = 'programming.txt'
+
+with open(filename, 'w') as file_object:
+    file_object.write("I love programming.")
+```
+
+
+
+
 
 #### 写入到文件 open()+print()
 
 ```PYTHON
-  data=open("D:\data.txt",'w+') 
-  print('这是个测试',file=data)
-  data.close()
+data=open("D:\data.txt",'w+') 
+print('这是个测试',file=data)
+data.close()
 ```
 
 
@@ -1100,7 +1196,7 @@ def clean_strings(strings, ops):
 
 * `__init__()`初始化方法，实例化时候自动运行
 * 带有前缀 `self` 的变量可通过实例访问，被称为`属性`
-* 
+* ​
 
 ```PYTHON
 class Dog():
