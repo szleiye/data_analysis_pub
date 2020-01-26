@@ -1196,7 +1196,7 @@ def clean_strings(strings, ops):
 
 * `__init__()`初始化方法，实例化时候自动运行
 * 带有前缀 `self` 的变量可通过实例访问，被称为`属性`
-* ​
+* 
 
 ```PYTHON
 class Dog():
@@ -1704,16 +1704,31 @@ dt_loan[list_1] = dt_loan[list_1].astype(float, copy=True)
 df[['two', 'three']] = df[['two', 'three']].astype(float)
 ```
 
+
+
+### 日期格式
+
 #### [转换成日期格式 pandas.to_datetime](http://pandas.pydata.org/pandas-docs/version/0.15/generated/pandas.to_datetime.html)
+
+* 可以处理`None`, 空字符串
 
 ```PYTHON
 # 批量转换成日期格式
 dt_overdue_record_raw[list_3] = dt_overdue_record_raw[list_3].apply(pd.to_datetime, infer_datetime_format=True)
 ```
 
+
+
+#### 字符转日期 datetime.strptime
+
+```python
+value = '2011-01-03'
+datetime.strptime(value, '%Y-%m-%d')
+```
+
+
+
 #### [根据日期返回指定格式的字符串 pandas.Series.dt.strftime](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.strftime.html)
-
-
 
 ```python
 # ex1
@@ -1722,7 +1737,24 @@ df1['month'] = df1.ListingInfo.dt.strftime('%Y-%m')
 # ex2
  rng = pd.date_range(pd.Timestamp("2018-03-10 09:00"), periods=3, freq='s')
  rng.strftime('%B %d, %Y, %r')
+
+# ex3 
+stamp = datetime(2011, 1, 3)
+str(stamp)
+stamp.strftime('%Y-%m-%d')
 ```
+
+
+
+#### 用dateutil中的parser解析日期字符
+
+```PYTHON
+from dateutil.parser import parse
+
+parse('2011-01-03')
+```
+
+
 
 
 
@@ -2709,9 +2741,48 @@ data['animal'] = data['food'].map(str.lower).map(meat_to_animal)  # meat_to_anim
 data['food'].map(lambda x: meat_to_animal[x.lower()])
 ```
 
-#### 
+
 
 ## 日期计算
+
+Python标准库主要会用到以下模块：
+
+* datetime
+* time
+* calendar
+
+#### datetime模块中数据类型
+
+| 类型      | 说明                 |
+| --------- | -------------------- |
+| date      | (年， 月， 日)       |
+| time      | (时，分，秒，毫秒)   |
+| datetime  | 储存日期和时间       |
+| timedelta | 两个datetime之间差值 |
+
+
+
+#### 取当前时间 datetime.now()
+
+```python
+from datetime import datetime
+now = datetime.now()  # 取当前时间
+
+now.year, now.month, now.day
+```
+
+
+
+#### 计算两个datetime对象时间差
+
+```PYTHON
+delta = datetime(2011, 1, 7) - datetime(2008, 6 24, 8, 15)  # 返回一个(day, second)的timedelta对象
+
+delta.days  # 取间隔日数
+delta.seconds  # 取剩余的秒数
+```
+
+
 
 #### 计算时间间隔 relativedelta()
 
@@ -2722,6 +2793,8 @@ LoanLDB = lambda df: (df["create_time"].dt.year - df["latestloanissuedate"].dt.y
 # 日对日
 Age = lambda df : df.apply(lambda r: relativedelta(r["create_time"],  r["birthday"]).years, axis =1)
 ```
+
+
 
  #### 计算时间间隔
 
@@ -2738,6 +2811,67 @@ df['diff_time'] = round(df['diff_time'])
 #方法二，日期相减变为小时；变为天的话将h替换为D即可：
 df['diff_time'] = (df['tm_1'] - df['tm_2']).values/np.timedelta64(1, 'h')
 
+```
+
+
+
+#### [生成日期范围 pd.date_range()](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.date_range.html )
+
+函数参数：
+> 
+> **start** : str or datetime-like, optional
+> 
+> **end** : str or datetime-like, optional
+> 
+> **periods** : integer, optional; 要生成多少期的日期范围
+> 
+> **freq** : str or DateOffset, default ‘D’
+> 
+> | Alias    | Description                                      |
+> | :------- | :----------------------------------------------- |
+> | C        | custom business day frequency                    |
+> | D        | calendar day frequency                           |
+> | W        | weekly frequency                                 |
+> | M        | month end frequency                              |
+> | SM       | semi-month end frequency (15th and end of month) |
+> | CBM      | custom business month end frequency              |
+> | MS       | month start frequency                            |
+> | SMS      | semi-month start frequency (1st and 15th)        |
+> | CBMS     | custom business month start frequency            |
+> | Q        | quarter end frequency                            |
+> | BQ       | business quarter end frequency                   |
+> | QS       | quarter start frequency                          |
+> | BQS      | business quarter start frequency                 |
+> | A, Y     | year end frequency                               |
+> | BA, BY   | business year end frequency                      |
+> | AS, YS   | year start frequency                             |
+> | BAS, BYS | business year start frequency                    |
+> | BH       | business hour frequency                          |
+> | H        | hourly frequency                                 |
+> 
+> **tz** : str or tzinfo, optional;  时区设置l，例如 `Asia/Hong_Kong` 
+> 
+> **normalize** : bool, default False
+> 
+> Normalize start/end dates to midnight before generating date range.
+> 
+> **name** : str, default None;  Name of the resulting DatetimeIndex.
+> 
+> **closed** : {None, ‘left’, ‘right’}, optional
+> 
+> Make the interval closed with respect to the given frequency to the ‘left’, ‘right’, or both sides (None, the default).
+> 
+
+
+```PYTHON
+# 生成按天计算的时间范围
+index = pd.date_range('4/1/2012', '6/1/2012')
+```
+
+#### 生成每个月月末日期
+
+```PYTHON
+index = pd.date_range('4/1/2012', '6/1/2012', freq='M')
 ```
 
 
