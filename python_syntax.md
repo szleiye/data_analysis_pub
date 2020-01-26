@@ -3883,3 +3883,46 @@ from toolz.curried import pipe, map, compose, get
 
 
 
+# 数据库操作
+
+#### pgsql 操作
+
+1. 创建一个数据库连接conn
+2. 创建一个游标cur
+3. 通过游标执行各种操作
+4. commit操作
+5. 关闭游标
+6. 关闭数据库连接
+
+
+
+```python
+>>> import psycopg2
+
+# Connect to an existing database
+>>> conn = psycopg2.connect("dbname=test user=postgres")
+
+# Open a cursor to perform database operations
+>>> cur = conn.cursor()
+
+# Execute a command: this creates a new table
+>>> cur.execute("CREATE TABLE test (id serial PRIMARY KEY, num integer, data varchar);")
+
+# Pass data to fill a query placeholders and let Psycopg perform
+# the correct conversion (no more SQL injections!)
+>>> cur.execute("INSERT INTO test (num, data) VALUES (%s, %s)",
+...      (100, "abc'def"))
+
+# Query the database and obtain data as Python objects
+>>> cur.execute("SELECT * FROM test;")
+>>> cur.fetchone()  # 返回元组
+(1, 100, "abc'def")
+
+# Make the changes to the database persistent
+>>> conn.commit()
+
+# Close communication with the database
+>>> cur.close()
+>>> conn.close()
+```
+
