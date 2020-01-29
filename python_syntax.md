@@ -209,10 +209,12 @@ def _validate_names(names):
     """
     Check if the `names` parameter contains duplicates.
     If duplicates are found, we issue a warning before returning.
+    
     Parameters
     ----------
     names : array-like or None
         An array containing a list of the names used for the output DataFrame.
+        
     Returns
     -------
     names : array-like or None
@@ -513,6 +515,8 @@ def md5value(s):
     return md5.hexdigest()
 ```
 
+
+
 #### [StringIO]( https://blog.csdn.net/lucyxu107/article/details/82728266 )
 
  数据读写不一定是文件，也可以在内存中读写。StringIO就是在内存中读写str 
@@ -531,6 +535,44 @@ def md5value(s):
 ```
 
 
+
+#### [动态生成变量 locals()](https://blog.csdn.net/u013061183/article/details/78015673 )
+
+locals()是一个字典，键是变量名，值是对应的变量的值
+
+可以通过新增键的形式来动态创建变量
+
+```PYTHON
+createVar = locals()
+listTemp = range(1,10)
+for i,s in enumerate(listTemp):
+    createVar['a'+i] = s
+print a1,a2,a3
+```
+
+
+
+#### [在class中动态生成变量  setattr( )](https://blog.csdn.net/u013061183/article/details/78015673 )
+
+setattr( object, name, value)
+
+>  This is the counterpart of `getattr()`. The arguments are an object, a string and an arbitrary value. The string may name an existing
+> attribute or a new attribute. The function assigns the value to the attribute, provided the object allows it. 
+>
+> For example : `setattr(x,'foobar', 123)` is equivalent to `x.foobar = 123`. 
+
+```PYTHON
+class test(object) :
+    def __init__(self):
+        dic={'a':'aa','b':'bb'}
+        for i in dic.keys() :
+            setattr(self,i,dic[i]) #第一个参数是对象，这里的self其实就是test.第二个参数是变量名，第三个是变量值
+        print(self.a)
+        print(self.b)
+t=test()
+
+# 打印结果是：aa, bb
+```
 
 
 
