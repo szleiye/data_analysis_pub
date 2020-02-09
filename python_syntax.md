@@ -1895,6 +1895,17 @@ print(article)
 
 ## 数据操作
 
+#### 新增多列
+
+```PYTHON
+colList = list(dataset.columns)
+colList.extend(['weekday_col5','week_col5','year_col5','month_col5','day_col5','hour_col5'])
+dataset = dataset.reindex(columns = colList)
+
+```
+
+
+
 #### 删除列或行 .drop
 
 ```PYTHON
@@ -3172,26 +3183,6 @@ np.random.uniform(1, 2, (5, 5))  # 随机数1-2之间，5行5列
 ```PYTHON
 numpy.random.randn(d0, d1, …, dn)  # 是从标准正态分布中返回一个或多个样本值。 ----------有负数
 ```
-
-# sklearn
-
-## 评价标准
-
-#### [sklearn.metrics.roc_curve]( https://blog.csdn.net/u014264373/article/details/80487766)
-
-```PYTHON
-import numpy as np
-from sklearn import metrics
-y = np.array([1, 1, 2, 2])
-scores = np.array([0.1, 0.4, 0.35, 0.8])
-fpr, tpr, thresholds = metrics.roc_curve(y, scores, pos_label=2) # thresholds是遍历scores。返回以各个thresholds下的fpr, tpr
-```
-
-
-
-## 决策树
-
-
 
 
 
