@@ -10,7 +10,7 @@ pandas-profiling: 一键生成EDA报告
 
 
 
-## [python风格规范](<https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/>)
+## [python风格规范](https://zh-google-styleguide.readthedocs.io/en/latest/google-python-styleguide/python_style_rules/)
 
 #### 缩进
 
@@ -205,6 +205,7 @@ if __name__=='__main__':
 #### 函数说明写法
 
 ```PYTHON
+# 写法1
 def _validate_names(names):
     """
     Check if the `names` parameter contains duplicates.
@@ -226,6 +227,14 @@ def _validate_names(names):
             raise ValueError("Duplicate names are not allowed.")
     return names
 
+# 写法2
+def some_func(myParam1, myParam2):
+    """
+    This is where you add what your function does
+	@param myParam1: (int) An integer for input
+    @param myParam2: (int) An integer for input
+    @return: (str) A string meesage
+    """
 ```
 
 
@@ -319,6 +328,17 @@ if os.path.isfile(dt_fname):
 else:
     data=pd.read_csv()
 ```
+
+
+
+#### 看当前文件夹下有什么文件 os.listdir()
+
+```PYTHON
+# 看文件夹内有什么数据
+os.listdir('./data/home-credit-default-risk/')
+```
+
+
 
 
 
@@ -613,9 +633,22 @@ class AssignValue(object):
 my_value = AssignValue(6)
 print('value 为: {0.value}'.format(my_value))  # "0" 是可选的
 
-# 同时指定名字和格式
+# 同时指定名字和格式, {:.2%}
 print('Around {safe_pct:.2%} are safe loan and {risky_pct:.2%} are risky loan'.format(safe_pct=safe/total, risky_pct=risky/total))
 ```
+
+
+
+#### 用f-Strings 让字符串更可读
+
+````PYTHON
+first = "Sam"
+last = "Miller"
+middle "Douglas"
+f"You are a fantastic programmer, {first} {middle} {last}"
+````
+
+
 
 #### 删除字符串中不想要的字符 re.sub() 
 
@@ -864,7 +897,22 @@ x.extend([7, 8, (2, 3)])
 
 ```python
 [x.upper() for x in strings if len(x) > 2]
+
+# 列表推导式结合函数
+def process(item):
+   item = item * 2
+   item = item / 5
+   item = item + 12
+   return item# Done with the map function
+
+new_list = map(process, items)# With a list comprehension, better readability!
+new_list = [process(item) for item in items]
+
+# 列表推导式加条件筛选
+filtered = [item for item in items if item > 5]
 ```
+
+
 
 
 
@@ -1578,6 +1626,27 @@ np.intersect1d(movies.movieId.unique(), links.movieId.unique())
 ```python
 print(len(movies.movieId.unique()))
 ```
+
+#### 查看变量相关性 
+
+[返回dataframe中两两的相关性 pandas.DataFrame.corr](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corr.html)
+
+[返回两个dataframe之间两两变量的相关性 pandas.DataFrame.corrwith](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.corrwith.html#pandas.DataFrame.corrwith)
+
+[返回一个series和其他的相关性]( https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.corr.html#pandas.Series.corr )
+
+```PYTHON
+# 1
+correlations = app_train.corr()['TARGET'].sort_values()
+
+# 2
+app_train[['DAYS_BIRTH', 'FLAG_DOCUMENT_3']].corrwith(app_train['TARGET'])
+
+# 3
+app_train['DAYS_BIRTH'].corr(app_train['TARGET'])
+```
+
+
 
 
 
@@ -2748,6 +2817,8 @@ combined = process_age()
 
 
 
+
+
 ##  字符操作
 
 #### .split() 分割字符
@@ -3091,7 +3162,9 @@ more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more
 
 # Numpy
 
-### [np.insert(*arr***,** *obj***,** *values***,** *axis=None*) 矩阵插入新数据](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.insert.html)
+### 矩阵
+
+#### [矩阵插入新数据 np.insert(*arr***,** *obj***,** *values***,** *axis=None*) ](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.insert.html)
 
 **arr** : array_like
 
@@ -3115,50 +3188,25 @@ more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more
 X = np.insert(X_raw, 0, np.ones(X_raw.shape[0]), axis=1)#增加全部为1的一列
 ```
 
-### [多维矩阵降为一维  np.ravel(*a*, *order='C'*) ](https://github.com/numpy/numpy/blob/v1.16.1/numpy/core/fromnumeric.py#L1583-L1687)
+#### [多维矩阵降为一维  np.ravel(*a*, *order='C'*) ](https://github.com/numpy/numpy/blob/v1.16.1/numpy/core/fromnumeric.py#L1583-L1687)
 
 返回原始矩阵降维后的视图，修改值影响原始矩阵
 
 
 
-### np.argmax() 返回最大值的索引
+#### 返回最大值的索引 np.argmax() 
 
-### np.random.choice*(*a, size=None, replace=True, p=None) 
-
-返回：从一维array a 或 int 数字a 中，以概率p随机选取大小为size的数据，replace表示是否重用元素，即抽取出来的数据是否放回原数组中，默认为true（抽取出来的数据有重复）
-
-```PYTHON
-#在（0，5）区间内生成含5个数据的一维数组
->>a = np.random.randint(0, 5, (5,))
->>print('a = ', a)
-    a =  [2 1 2 1 3]
-#在a数组中抽取6个数，replace为true
->>b = np.random.choice(a, 6)
->>print('b = ', b)
-    b =  [1 1 2 2 1]
-#replace为False时，size需小于等于len(a)
->>c = np.random.choice(a, 5, replace=False, p=None)
->>print('c = ', c)
-    c =  [3 2 1 1 2]
-#p是数组a中所有数出现的概率，总和为1
->>d = np.random.choice(a, 5, replace=False, p=[0.2, 0.3, 0.1, 0.3, 0.1])
->>print('d = ', d)
-    d =  [1 3 2 1 2]
-```
-
-### 生成序列  np.arange
+#### 生成序列  np.arange
 
 ```PYTHON
 np.arange(0.0, 5.0, 0.01)  #0-5，每隔0.01
 ```
 
-### 增加多一维
+#### 增加多一维
 
 ```PYTHON
 X_test = np.arange(0.0, 5.0, 0.01)[:, np.newaxis]
 ```
-
-
 
 
 
@@ -3182,6 +3230,44 @@ np.random.uniform(1, 2, (5, 5))  # 随机数1-2之间，5行5列
 
 ```PYTHON
 numpy.random.randn(d0, d1, …, dn)  # 是从标准正态分布中返回一个或多个样本值。 ----------有负数
+```
+
+### np.random.choice(a, size=None, replace=True, p=None) 
+
+返回：从一维array a 或 int 数字a 中，以概率p随机选取大小为size的数据，replace表示是否重用元素，即抽取出来的数据是否放回原数组中，默认为true（抽取出来的数据有重复）
+
+```PYTHON
+#在（0，5）区间内生成含5个数据的一维数组
+>>a = np.random.randint(0, 5, (5,))
+>>print('a = ', a)
+    a =  [2 1 2 1 3]
+#在a数组中抽取6个数，replace为true
+>>b = np.random.choice(a, 6)
+>>print('b = ', b)
+    b =  [1 1 2 2 1]
+#replace为False时，size需小于等于len(a)
+>>c = np.random.choice(a, 5, replace=False, p=None)
+>>print('c = ', c)
+    c =  [3 2 1 1 2]
+#p是数组a中所有数出现的概率，总和为1
+>>d = np.random.choice(a, 5, replace=False, p=[0.2, 0.3, 0.1, 0.3, 0.1])
+>>print('d = ', d)
+    d =  [1 3 2 1 2]
+```
+
+#### 
+
+### 其他
+
+#### [生成一列均分的数 numpy.linspace](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.linspace.html#numpy-linspace)
+
+```PYTHON
+>>> np.linspace(2.0, 3.0, num=5)
+array([ 2.  ,  2.25,  2.5 ,  2.75,  3.  ])
+>>> np.linspace(2.0, 3.0, num=5, endpoint=False)
+array([ 2. ,  2.2,  2.4,  2.6,  2.8])
+>>> np.linspace(2.0, 3.0, num=5, retstep=True)
+(array([ 2.  ,  2.25,  2.5 ,  2.75,  3.  ]), 0.25)
 ```
 
 
@@ -3371,7 +3457,7 @@ ax.set_title('aaa')
 * 过程型的pyplot接口 (如plt.xxx，只对最近的fig起作用)
 * [面向对象的原生matplotlib API (推荐，可以指定对哪个fig使用)](https://matplotlib.org/api/axes_api.html) 
 
-#### 调整x轴坐标
+#### [调整x轴坐标标签](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_xticklabels.html#matplotlib.axes.Axes.set_xticklabels)
 
 ```python
 # 设置x轴标签大小
@@ -3379,6 +3465,9 @@ plt.tick_params(axis='x', labelsize=8)
 
 # 旋转x轴坐标
 plt.xticks(rotation=-15)    
+
+# 旋转x轴坐标
+ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, fontdict={'horizontalalignment': 'right'})
 ```
 
 #### 双坐标轴 ax.twinx()
@@ -4023,11 +4112,141 @@ plt.scatter(trans_data['m1'], trans_data['unemp'])
 pd.scatter_matrix(trans_data, diagonal='kde', color='k', alpha=0.3)
 ```
 
-#### 自定义颜色 df.plot(style=None, colormap=None)
+#### [热力图](https://matplotlib.org/gallery/images_contours_and_fields/image_annotated_heatmap.html#sphx-glr-gallery-images-contours-and-fields-image-annotated-heatmap-py)
 
 ```PYTHON
+def heatmap(data, row_labels, col_labels, ax=None,
+            cbar_kw={}, cbarlabel="", **kwargs):
+    """
+    Create a heatmap from a numpy array and two lists of labels.
 
+    Parameters
+    ----------
+    data
+        A 2D numpy array of shape (N, M).
+    row_labels
+        A list or array of length N with the labels for the rows.
+    col_labels
+        A list or array of length M with the labels for the columns.
+    ax
+        A `matplotlib.axes.Axes` instance to which the heatmap is plotted.  If
+        not provided, use current axes or create a new one.  Optional.
+    cbar_kw
+        A dictionary with arguments to `matplotlib.Figure.colorbar`.  Optional.
+    cbarlabel
+        The label for the colorbar.  Optional.
+    **kwargs
+        All other arguments are forwarded to `imshow`.
+    """
+
+    if not ax:
+        ax = plt.gca()
+
+    # Plot the heatmap
+    im = ax.imshow(data, **kwargs)
+
+    # Create colorbar
+    cbar = ax.figure.colorbar(im, ax=ax, **cbar_kw)
+    cbar.ax.set_ylabel(cbarlabel, rotation=-90, va="bottom")
+
+    # We want to show all ticks...
+    ax.set_xticks(np.arange(data.shape[1]))
+    ax.set_yticks(np.arange(data.shape[0]))
+    # ... and label them with the respective list entries.
+    ax.set_xticklabels(col_labels)
+    ax.set_yticklabels(row_labels)
+
+    # Let the horizontal axes labeling appear on top.
+    ax.tick_params(top=True, bottom=False,
+                   labeltop=True, labelbottom=False)
+
+    # Rotate the tick labels and set their alignment.
+    plt.setp(ax.get_xticklabels(), rotation=-30, ha="right",
+             rotation_mode="anchor")
+
+    # Turn spines off and create white grid.
+    for edge, spine in ax.spines.items():
+        spine.set_visible(False)
+
+    ax.set_xticks(np.arange(data.shape[1]+1)-.5, minor=True)
+    ax.set_yticks(np.arange(data.shape[0]+1)-.5, minor=True)
+    ax.grid(which="minor", color="w", linestyle='-', linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    return im, cbar
+
+
+def annotate_heatmap(im, data=None, valfmt="{x:.2f}",
+                     textcolors=["black", "white"],
+                     threshold=None, **textkw):
+    """
+    A function to annotate a heatmap.
+
+    Parameters
+    ----------
+    im
+        The AxesImage to be labeled.
+    data
+        Data used to annotate.  If None, the image's data is used.  Optional.
+    valfmt
+        The format of the annotations inside the heatmap.  This should either
+        use the string format method, e.g. "$ {x:.2f}", or be a
+        `matplotlib.ticker.Formatter`.  Optional.
+    textcolors
+        A list or array of two color specifications.  The first is used for
+        values below a threshold, the second for those above.  Optional.
+    threshold
+        Value in data units according to which the colors from textcolors are
+        applied.  If None (the default) uses the middle of the colormap as
+        separation.  Optional.
+    **kwargs
+        All other arguments are forwarded to each call to `text` used to create
+        the text labels.
+    """
+
+    if not isinstance(data, (list, np.ndarray)):
+        data = im.get_array()
+
+    # Normalize the threshold to the images color range.
+    if threshold is not None:
+        threshold = im.norm(threshold)
+    else:
+        threshold = im.norm(data.max())/2.
+
+    # Set default alignment to center, but allow it to be
+    # overwritten by textkw.
+    kw = dict(horizontalalignment="center",
+              verticalalignment="center")
+    kw.update(textkw)
+
+    # Get the formatter in case a string is supplied
+    if isinstance(valfmt, str):
+        valfmt = matplotlib.ticker.StrMethodFormatter(valfmt)
+
+    # Loop over the data and create a `Text` for each "pixel".
+    # Change the text's color depending on the data.
+    texts = []
+    for i in range(data.shape[0]):
+        for j in range(data.shape[1]):
+            kw.update(color=textcolors[int(im.norm(data[i, j]) > threshold)])
+            text = im.axes.text(j, i, valfmt(data[i, j], None), **kw)
+            texts.append(text)
+
+    return texts
 ```
+
+
+
+#### [颜色设置](https://matplotlib.org/api/colors_api.html)
+
+- an RGB or RGBA tuple of float values in `[0, 1]` (e.g., `(0.1, 0.2, 0.5)` or `(0.1, 0.2, 0.5, 0.3)`);
+- a hex RGB or RGBA string (e.g., `'#0f0f0f'` or `'#0f0f0f80'`; case-insensitive);
+- a string representation of a float value in `[0, 1]` inclusive for gray level (e.g., `'0.5'`);
+- one of `{'b', 'g', 'r', 'c', 'm', 'y', 'k', 'w'}`;
+- a X11/CSS4 color name (case-insensitive);
+- a name from the [xkcd color survey](https://xkcd.com/color/rgb/), prefixed with `'xkcd:'` (e.g., `'xkcd:sky blue'`; case insensitive);
+- one of the Tableau Colors from the 'T10' categorical palette (the default color cycle): `{'tab:blue', 'tab:orange', 'tab:green', 'tab:red', 'tab:purple', 'tab:brown', 'tab:pink', 'tab:gray', 'tab:olive', 'tab:cyan'}` (case-insensitive);
+- a "CN" color spec, i.e. `'C'` followed by a number, which is an index into the default property cycle (`matplotlib.rcParams['axes.prop_cycle']`); the indexing is intended to occur at rendering time, and defaults to black if the cycle does not include color.
 
 
 

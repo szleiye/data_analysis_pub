@@ -4,7 +4,54 @@
 
 ## 数据处理
 
+#### [对齐数据框 pandas.DataFrame.align](https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.DataFrame.align.html)
+
+
+
+
+
 #### [sklearn.preprocessing.OneHotEncoder](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing)
+
+
+
+#### [pandas.get_dummies](https://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.get_dummies.html)
+
+```PYTHON
+app_train = pd.get_dummies(app_train)
+app_test = pd.get_dummies(app_test)
+```
+
+
+
+
+
+#### [sklearn.preprocessing.LabelEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder )
+
+将target label转换成0 至 n_class-1 之间的值。一般用在y上转换，不用再x上。
+
+|方法|备注|
+|-----|-----|
+| [`fit`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.fit)(self, y) | Fit label encoder                           |
+| [`fit_transform`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.fit_transform)(self, y) | Fit label encoder and return encoded labels |
+| [`get_params`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.get_params)(self[, deep]) | Get parameters for this estimator.          |
+| [`inverse_transform`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.inverse_transform)(self, y) | Transform labels back to original encoding. |
+| [`set_params`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.set_params)(self, \*\*params) | Set the parameters of this estimator.       |
+| [`transform`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder.transform)(self, y) | Transform labels to normalized encoding.    |
+
+```PYTHON
+>>> le = preprocessing.LabelEncoder()
+>>> le.fit(["paris", "paris", "tokyo", "amsterdam"])
+LabelEncoder()
+
+>>> list(le.classes_)
+['amsterdam', 'paris', 'tokyo']
+
+>>> le.transform(["tokyo", "tokyo", "paris"])
+array([2, 2, 1]...)
+
+>>> list(le.inverse_transform([2, 2, 1]))
+['tokyo', 'tokyo', 'paris']
+```
 
 
 
