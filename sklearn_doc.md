@@ -14,6 +14,8 @@
 
 
 
+### 类别变量转换
+
 #### [pandas.get_dummies](https://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.get_dummies.html)
 
 ```PYTHON
@@ -52,6 +54,58 @@ array([2, 2, 1]...)
 >>> list(le.inverse_transform([2, 2, 1]))
 ['tokyo', 'tokyo', 'paris']
 ```
+
+
+
+### 变量衍生
+
+#### [多项式衍生 sklearn.preprocessing.PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures )
+
+返回输入变量所有可能的多项式组合
+
+例如输入`[a, b]`，返回` [1, a, b, a^2, ab, b^2] `
+
+| 参数             | 输入值                         | 备注                                                         |
+| ---------------- | ------------------------------ | ------------------------------------------------------------ |
+| degree           | integer, Default = 2           |                                                              |
+| interaction_only | boolean, default = False       | If true, only interaction features are produced: features that are products of at most `degree` *distinct* input features (so not `x[1] ** 2`, `x[0] * x[2] ** 3`, etc.). |
+| include_bias     | boolean, default = True        | 含不含一列全是1                                              |
+| order            | str in {‘C’, ‘F’}, default ‘C’ | Order of output array in the dense case. ‘F’ order is faster to compute, but may slow down subsequent estimators. |
+
+
+
+
+
+| 方法| 备注|
+|---|---|
+| [`fit`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.fit)(self, X[, y]) | Compute number of output features.       |
+| [`fit_transform`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.fit_transform)(self, X[, y]) | Fit to data, then transform it.          |
+| [`get_feature_names`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.get_feature_names)(self[, input_features]) | Return feature names for output features |
+| [`get_params`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.get_params)(self[, deep]) | Get parameters for this estimator.       |
+| [`set_params`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.set_params)(self, \*\*params) | Set the parameters of this estimator.    |
+| [`transform`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures.transform)(self, X) | Transform data to polynomial features    |
+
+
+
+```PYTHON
+from sklearn.preprocessing import PolynomialFeatures
+                                  
+# Create the polynomial object with specified degree
+poly_transformer = PolynomialFeatures(degree = 3)
+
+# Train the polynomial features
+poly_transformer.fit(poly_features)
+
+# Transform the features
+poly_features = poly_transformer.transform(poly_features)
+poly_features_test = poly_transformer.transform(poly_features_test)
+print('Polynomial Features shape: ', poly_features.shape)
+
+# 输出变量名
+poly_transformer.get_feature_names(input_features = ['EXT_SOURCE_1', 'EXT_SOURCE_2', 'EXT_SOURCE_3', 'DAYS_BIRTH'])[:15]
+```
+
+
 
 
 
@@ -287,12 +341,40 @@ graph
 
 #### [sklearn.metrics.roc_curve]( https://blog.csdn.net/u014264373/article/details/80487766)
 
+* fpr: 误报率，所有的好客户有多少被预测为坏客户
+* tpr: 灵敏度，所有的坏客户有多少被预测到
+
 ```PYTHON
 import numpy as np
 from sklearn import metrics
+
 y = np.array([1, 1, 2, 2])
 scores = np.array([0.1, 0.4, 0.35, 0.8])
 fpr, tpr, thresholds = metrics.roc_curve(y, scores, pos_label=2) # thresholds是遍历scores。返回以各个thresholds下的fpr, tpr
+```
+
+```PYTHON
+from sklearn.metrics import roc_auc_score,roc_curve,auc
+
+y_pred = lr_model.predict_proba(x)[:,1]
+fpr_lr_train,tpr_lr_train,_ = roc_curve(y,y_pred)
+train_ks = abs(fpr_lr_train - tpr_lr_train).max()
+print('train_ks : ',train_ks)
+
+y_pred = lr_model.predict_proba(val_x)[:,1]
+fpr_lr,tpr_lr,_ = roc_curve(val_y,y_pred)
+val_ks = abs(fpr_lr - tpr_lr).max()
+print('val_ks : ',val_ks)
+
+from matplotlib import pyplot as plt
+plt.plot(fpr_lr_train,tpr_lr_train,label = 'train LR')
+plt.plot(fpr_lr,tpr_lr,label = 'evl LR')
+plt.plot([0,1],[0,1],'k--')
+plt.xlabel('False positive rate')
+plt.ylabel('True positive rate')
+plt.title('ROC Curve')
+plt.legend(loc = 'best')
+plt.show()
 ```
 
 
