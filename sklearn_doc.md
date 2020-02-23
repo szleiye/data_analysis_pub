@@ -10,10 +10,6 @@
 
 
 
-#### [sklearn.preprocessing.OneHotEncoder](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing)
-
-
-
 ### 类别变量转换
 
 #### [pandas.get_dummies](https://pandas.pydata.org/pandas-docs/version/0.23.4/generated/pandas.get_dummies.html)
@@ -25,9 +21,11 @@ app_test = pd.get_dummies(app_test)
 
 
 
+#### [preprocessing.OneHotEncoder](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.preprocessing)
 
 
-#### [sklearn.preprocessing.LabelEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder )
+
+#### [preprocessing.LabelEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html#sklearn.preprocessing.LabelEncoder )
 
 将target label转换成0 至 n_class-1 之间的值。一般用在y上转换，不用再x上。
 
@@ -59,7 +57,7 @@ array([2, 2, 1]...)
 
 ### 变量衍生
 
-#### [多项式衍生 sklearn.preprocessing.PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures )
+#### [多项式衍生 preprocessing.PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html#sklearn.preprocessing.PolynomialFeatures )
 
 返回输入变量所有可能的多项式组合
 
@@ -106,6 +104,124 @@ poly_transformer.get_feature_names(input_features = ['EXT_SOURCE_1', 'EXT_SOURCE
 ```
 
 
+
+
+
+## Cross-validation
+
+
+
+#### [训练测试集划分 train_test_split](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html )
+
+sklearn.model_selection.train_test_split(*arrays, **options)
+
+| 参数         | 类型                                                       | 备注                                                         |
+| ------------ | ---------------------------------------------------------- | ------------------------------------------------------------ |
+| arrays       |                                                            | sequence of indexables with same length / shape[0]           |
+| test_size    | float, int or None, optional (default=None, 0.25)          | the proportion of the dataset to include in the test split   |
+| train_size   | float, int or None, optional                               |                                                              |
+| random_state | int, RandomState instance or None, optional (default=None) |                                                              |
+| shuffle      | boolean, optional (default=True)                           | Whether or not to shuffle the data before splitting. If shuffle=False then stratify must be None. |
+| stratify     | array-like or None (default=None)                          | If not None, data is split in a stratified fashion, using this as the class labels. |
+
+
+
+| 返回      | 类型                           | 备注                                       |
+| --------- | ------------------------------ | ------------------------------------------ |
+| splitting | list, length=2  \* len(arrays) | List containing train-test split of inputs |
+
+
+
+```PYTHON
+from sklearn.model_selection import train_test_split
+
+train_features, test_features, train_labels, test_labels = train_test_split(features, labels, test_size = 6000, random_state = 50)
+```
+
+
+
+
+
+#### [K-Fold检验 model_selection.KFold](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html#sklearn.model_selection.KFold )
+
+| 参数         | 类型                                                     | 备注                                                         |
+| ------------ | -------------------------------------------------------- | ------------------------------------------------------------ |
+| n_splits     | int, default=5                                           | Number of folds. Must be at least 2.<br />*Changed in version 0.22:* `n_splits` default value changed from 3 to 5. |
+| shuffle      | boolean, optional                                        | Whether to shuffle the data before splitting into batches    |
+| random_state | nt, RandomState instance or None, optional, default=None | If int, random_state is the seed used by the random number generator; <br /> Only used when `shuffle` is True. This should be left to None if `shuffle` is False. |
+
+
+
+| 方法                                                         | 备注                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`get_n_splits`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html#sklearn.model_selection.KFold.get_n_splits)(self[, X, y, groups]) | Returns the number of splitting iterations in the cross-validator |
+| [`split`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html#sklearn.model_selection.KFold.split)(self, X[, y, groups]) | 返回样本的编号 Generate indices to split data into training and test set. |
+
+
+
+```python
+# 官方例子
+>>> import numpy as np
+>>> from sklearn.model_selection import KFold
+>>> X = np.array([[1, 2], [3, 4], [1, 2], [3, 4]])
+>>> y = np.array([1, 2, 3, 4])
+>>> kf = KFold(n_splits=2)
+>>> kf.get_n_splits(X)
+2
+>>> print(kf)
+KFold(n_splits=2, random_state=None, shuffle=False)
+>>> for train_index, test_index in kf.split(X):
+...     print("TRAIN:", train_index, "TEST:", test_index)
+...     X_train, X_test = X[train_index], X[test_index]
+...     y_train, y_test = y[train_index], y[test_index]
+TRAIN: [2 3] TEST: [0 1]
+TRAIN: [0 1] TEST: [2 3]
+```
+
+```PYTHON
+for train_indices, valid_indices in k_fold.split(features):
+    
+    # Training data for the fold
+    train_features, train_labels = features[train_indices], labels[train_indices]
+    # Validation data for the fold
+    valid_features, valid_labels = features[valid_indices], labels[valid_indices]
+    
+    # Create the model
+    model = lgb.LGBMClassifier(n_estimators=10000, objective = 'binary', 
+                               class_weight = 'balanced', learning_rate = 0.05, 
+                               reg_alpha = 0.1, reg_lambda = 0.1, 
+                               subsample = 0.8, n_jobs = -1, random_state = 50)
+    
+    # Train the model
+    model.fit(train_features, train_labels, eval_metric = 'auc',
+              eval_set = [(valid_features, valid_labels), (train_features, train_labels)],
+              eval_names = ['valid', 'train'], categorical_feature = cat_indices,
+              early_stopping_rounds = 100, verbose = 200)
+    
+    # Record the best iteration
+    best_iteration = model.best_iteration_
+    
+    # Record the feature importances
+    feature_importance_values += model.feature_importances_ / k_fold.n_splits
+    
+    # 对 test 集的样本进行预测， 取每次预测加总后平均的概率
+    test_predictions += model.predict_proba(test_features, num_iteration = best_iteration)[:, 1] / k_fold.n_splits
+    
+    # 记录下本次out of fold的预测
+    out_of_fold[valid_indices] = model.predict_proba(valid_features, num_iteration = best_iteration)[:, 1]
+    
+    # Record the best score
+    valid_score = model.best_score_['valid']['auc']
+    train_score = model.best_score_['train']['auc']
+    
+    valid_scores.append(valid_score)
+    train_scores.append(train_score)
+    
+    # Clean up memory
+    gc.enable()
+    del model, train_features, valid_features
+    gc.collect()
+```
 
 
 
@@ -337,6 +453,95 @@ graph
 
 
 
+## 随机森林 
+
+#### [分类森林 sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn-ensemble-randomforestclassifier)
+
+
+
+参数
+
+| 参数         | 类型                            | 备注                               |
+| ------------ | ------------------------------- | ---------------------------------- |
+| n_estimators | integer, optional (default=100) | The number of trees in the forest. |
+|              |                                 |                                    |
+
+
+
+| 方法 | 备注 |
+| ---- | ---- |
+| [`apply`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.apply)(self, X) | Apply trees in the forest to X, return leaf indices.        |
+| [`decision_path`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.decision_path)(self, X) | Return the decision path in the forest.                     |
+| [`fit`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.fit)(self, X, y[, sample_weight]) | Build a forest of trees from the training set (X, y).       |
+| [`get_params`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.get_params)(self[, deep]) | Get parameters for this estimator.                          |
+| [`predict`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict)(self, X) | Predict class for X.                                        |
+| [`predict_log_proba`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict_log_proba)(self, X) | Predict class log-probabilities for X.                      |
+| [`predict_proba`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict_proba)(self, X) | Predict class probabilities for X.                          |
+| [`score`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.score)(self, X, y[, sample_weight]) | Return the mean accuracy on the given test data and labels. |
+| [`set_params`](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.set_params)(self, \*\*params) | Set the parameters of this estimator.                       |
+
+
+
+```PYTHON
+>>> from sklearn.model_selection import cross_val_score
+>>> from sklearn.datasets import make_blobs
+>>> from sklearn.ensemble import RandomForestClassifier
+>>> from sklearn.ensemble import ExtraTreesClassifier
+>>> from sklearn.tree import DecisionTreeClassifier
+
+>>> X, y = make_blobs(n_samples=10000, n_features=10, centers=100,
+...     random_state=0)
+
+>>> clf = DecisionTreeClassifier(max_depth=None, min_samples_split=2,
+...     random_state=0)
+>>> scores = cross_val_score(clf, X, y, cv=5)
+>>> scores.mean()
+0.98...
+
+>>> clf = RandomForestClassifier(n_estimators=10, max_depth=None,
+...     min_samples_split=2, random_state=0)
+>>> scores = cross_val_score(clf, X, y, cv=5)
+>>> scores.mean()
+0.999...
+
+>>> clf = ExtraTreesClassifier(n_estimators=10, max_depth=None,
+...     min_samples_split=2, random_state=0)
+>>> scores = cross_val_score(clf, X, y, cv=5)
+>>> scores.mean() > 0.999
+True
+```
+
+
+
+## [lightGBM](https://lightgbm.readthedocs.io/en/latest/)
+
+#### cv
+
+返回：字典，最佳树棵树的长度，存了auc值mean和std
+
+```PYTHON
+train_set = lgb.Dataset(data=train_features, label=train_labels)
+test_set = lgb.Dataset(data=test_features, label=test_labels)
+
+model = lgb.LGBMClassifier()
+default_params = model.get_params()
+
+del default_params['n_estimators'] # Remove the number of estimators because we set this to 10000 in the cv call
+
+# Cross validation with early stopping
+cv_results = lgb.cv(default_params,
+                    train_set, 
+                    num_boost_round = 10000,
+                    early_stopping_rounds = 100, 
+                    metrics = 'auc', 
+                    nfold = N_FOLDS, 
+                    seed = 42)
+```
+
+
+
+
+
 ## 评价标准
 
 #### [sklearn.metrics.roc_curve]( https://blog.csdn.net/u014264373/article/details/80487766)
@@ -376,6 +581,8 @@ plt.title('ROC Curve')
 plt.legend(loc = 'best')
 plt.show()
 ```
+
+
 
 
 

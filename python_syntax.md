@@ -459,6 +459,61 @@ for i,col in enumerate(['Pclass','SibSp','Parch']):
     plt.close()
 ```
 
+
+
+#### [zip函数](https://www.runoob.com/python/python-func-zip.html )
+
+**zip()** 函数用于将可迭代的对象作为参数，将对象中对应的元素打包成一个个元组，然后返回由这些元组组成的列表。
+
+如果各个迭代器的元素个数不一致，则返回列表长度与最短的对象相同，利用 * 号操作符，可以将元组解压为列表。
+
+```PYTHON
+>>>a = [1,2,3]
+>>> b = [4,5,6]
+>>> c = [4,5,6,7,8]
+>>> zipped = zip(a,b)     # 打包为元组的列表
+[(1, 4), (2, 5), (3, 6)]
+>>> zip(a,c)              # 元素个数与最短的列表一致
+[(1, 4), (2, 5), (3, 6)]
+>>> zip(*zipped)          # 与 zip 相反，*zipped 可理解为解压，返回二维矩阵式
+[(1, 2, 3), (4, 5, 6)]
+```
+
+
+
+#### [生成参数所有笛卡尔积itertools.product()](https://docs.python.org/zh-cn/3/library/itertools.html#itertools.product)
+
+```PYTHON
+    # https://codereview.stackexchange.com/questions/171173/list-all-possible-permutations-from-a-python-dictionary-of-lists
+    keys, values = zip(*param_grid.items())  # 解压，将字段元素返回成 key 和 item 两个元组
+    
+    i = 0
+    
+    # Iterate through every possible combination of hyperparameters
+    for v in itertools.product(*values):  # 生成所有超参的笛卡尔积
+        
+        # Create a hyperparameter dictionary
+        hyperparameters = dict(zip(keys, v))  # 对每一组超参，重新打包成一个字典
+        
+        # Set the subsample ratio accounting for boosting type
+        hyperparameters['subsample'] = 1.0 if hyperparameters['boosting_type'] == 'goss' else hyperparameters['subsample']
+        
+        # Evalute the hyperparameters
+        eval_results = objective(hyperparameters, i)
+        
+        results.loc[i, :] = eval_results
+        
+        i += 1
+        
+        # Normally would not limit iterations
+        if i > MAX_EVALS:
+            break
+```
+
+
+
+
+
 #### 检查元素类型 isinstance()
 
 ```python
@@ -513,6 +568,35 @@ print(B)  # 结果 <map object at 0x0000024B202476D8>
 print(C)  # 结果 [1, 1, 2, 3]
 
 ```
+
+
+
+#### 查看变量大小 sys.getsizeof()
+
+```python
+import sys
+
+def return_size(df):
+    '''Return size of dataframe in gigabytes'''
+    return round(sys.getsizeof(df) / 1e9, 2)
+```
+
+
+
+#### 随[机取数 random.sample()](https://docs.python.org/3/library/random.html )
+
+```PYTHON
+random.seed(50)
+
+# Randomly sample from dictionary
+random_params = {k: random.sample(v, 1)[0] for k, v in param_grid.items()}  # 从参数列表随机选1个random.sample(v, 1)[0]，[0]是要去除列表形式
+# Deal with subsample ratio
+random_params['subsample'] = 1.0 if random_params['boosting_type'] == 'goss' else random_params['subsample']
+
+random_params
+```
+
+
 
 
 
@@ -840,6 +924,8 @@ cars.sort(reverser=True)
 
 ```PYTHON
 sorted(cars)
+
+sorted(new_corrs, key = lambda x: abs(x[1]), reverse = True)
 ```
 
 
@@ -1125,7 +1211,6 @@ for value in sequence:
         break
     total_until_5 += value
     
-
 ```
 
 #### 迭代生成整数xrange
@@ -1208,22 +1293,63 @@ first_names, last_names = zip(*pitchers)
 
 
 
-#### 传递任意数量位置实参，关键字实参 *args、 **kwargs
+#### [传递任意数量位置实参，关键字实参 *args、 **kwargs](https://www.liaoxuefeng.com/wiki/1016959663602400/1017261630425888)
 
 位置参数(`*args`)：被打包成元组
+
+```PYTHON
+def calc(numbers):
+    sum = 0
+    for n in numbers:
+        sum = sum + n * n
+    return sum
+
+>>> calc([1, 2, 3])
+14
+>>> calc((1, 3, 5, 7))
+84
+```
+
+
 
 关键字参数(`**kwargs`)：通常用于指定默认值或可选参数，**必须位于位置参数之后**，被打包成字典
 
 ```PYTHON
-def say_hello_then_call_f(f, *args, **kwargs):
-"""
-    传入args和kwargs给f这个函数，并且输出他的值和两种参数
-"""
-    print 'args is', args
-    pring 'kwargs is', kwargs
-    print("Hello! Now I'm going to call %s" % f)
-    return f(*args, **kwargs)
+def person(name, age, **kw):
+    print('name:', name, 'age:', age, 'other:', kw)
+
+# 用法1
+>>> person('Adam', 45, gender='M', job='Engineer')
+name: Adam age: 45 other: {'gender': 'M', 'job': 'Engineer'}  
+            
+# 用法2： 将字典传入关键字参数
+>>> extra = {'city': 'Beijing', 'job': 'Engineer'}
+>>> person('Jack', 24, **extra)
+name: Jack age: 24 other: {'city': 'Beijing', 'job': 'Engineer'}
 ```
+
+
+
+#### 命名关键字参数，限制接受关键字参数的范围
+
+和关键字参数`**kw`不同，命名关键字参数需要一个特殊分隔符`*`，`*`后面的参数被视为命名关键字参数。 
+
+ 如果函数定义中已经有了一个可变参数，后面跟着的命名关键字参数就不再需要一个特殊分隔符`*`了。
+
+```PYTHON
+# 1
+def person(name, age, *, city, job):
+    print(name, age, city, job)
+    
+>>> person('Jack', 24, city='Beijing', job='Engineer')  # 调用的时候一定要写参数名
+Jack 24 Beijing Engineer
+
+# 2
+def person(name, age, *args, city, job):
+    print(name, age, args, city, job)
+```
+
+
 
 
 
@@ -3041,6 +3167,12 @@ df1.add(df2,fill_value=0)
 
 #### df.mul() 乘法
 
+#### np.cumsum()累加
+
+```PYTHON
+df['cumulative_importance'] = np.cumsum(df['importance_normalized'])
+```
+
 
 
 ## 排序
@@ -3210,6 +3342,27 @@ X_test = np.arange(0.0, 5.0, 0.01)[:, np.newaxis]
 
 
 
+#### [上三角矩阵 numpy.triu](https://docs.scipy.org/doc/numpy/reference/generated/numpy.triu.html)
+
+ `numpy.triu(m, k=0)`
+
+```PYTHON
+# 1
+np.triu([[1,2,3],[4,5,6],[7,8,9],[10,11,12]], -1)
+
+array([[ 1,  2,  3],
+       [ 4,  5,  6],
+       [ 0,  8,  9],
+       [ 0,  0, 12]])
+
+# 2
+upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
+```
+
+
+
+
+
 ### 随机数模块random
 
 #### 生成随机数 np.random.rand
@@ -3255,7 +3408,7 @@ numpy.random.randn(d0, d1, …, dn)  # 是从标准正态分布中返回一个�
     d =  [1 3 2 1 2]
 ```
 
-#### 
+
 
 ### 其他
 
@@ -3271,6 +3424,18 @@ array([ 2. ,  2.2,  2.4,  2.6,  2.8])
 ```
 
 
+
+#### [等比数列 numpy.logspace](https://docs.scipy.org/doc/numpy/reference/generated/numpy.logspace.html )
+
+numpy.logspace(start, stop, num=50, endpoint=True, base=10.0, dtype=None, axis=0)
+
+* In linear space, the sequence starts at $base^{start}$ (base to the power of start) and ends with $base^{stop}$ "
+
+```PYTHON
+>>> a = np.logspace(0,9,10,base=2)
+>>> a
+array([   1.,    2.,    4.,    8.,   16.,   32.,   64.,  128.,  256.,  512.])
+```
 
 
 
@@ -3527,6 +3692,12 @@ dy = (ymax - ymin) * 0.2
 xlim(xmin - dx, xmax + dx)
 ylim(ymin - dy, ymax + dy)
 ```
+
+#### [设置坐标轴范围 ax.set_ylim()](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_ylim.html#matplotlib.axes.Axes.set_ylim )
+
+ Axes.set_ylim(*self*, *bottom=None*, *top=None*, *emit=True*, *auto=False*, ***, *ymin=None*, *ymax=None*) 
+
+
 
 #### 设置刻度标签 ax.set_xticks() / ax.set_xticklabels()
 
