@@ -27,6 +27,38 @@
 
 
 
+#### similar to 
+
+```python
+similar to '%aaa%|%bbb%'
+```
+
+
+
+#### [with](https://www.runoob.com/postgresql/postgresql-with.html )
+
+在 PostgreSQL 中，WITH 子句提供了一种编写辅助语句的方法，以便在更大的查询中使用。
+
+WITH 子句有助于将复杂的大型查询分解为更简单的表单，便于阅读。这些语句通常称为通用表表达式（Common Table Express， CTE），也可以当做一个为查询而存在的临时表。
+
+WITH 子句是在多次执行子查询时特别有用，允许我们在查询中通过它的名称(可能是多次)引用它。
+
+WITH 子句在使用前必须先定义。
+
+```python
+WITH
+   name_for_summary_data AS (
+      SELECT Statement)
+   SELECT columns
+   FROM name_for_summary_data
+   WHERE conditions <=> (
+      SELECT column
+      FROM name_for_summary_data)
+   [ORDER BY columns]
+```
+
+
+
 ### 分组聚合
 
 #### grouping set 分组集

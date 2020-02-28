@@ -403,8 +403,6 @@ with open(filename, 'w') as file_object:
 
 
 
-
-
 #### 写入到文件 open()+print()
 
 ```PYTHON
@@ -412,6 +410,27 @@ data=open("D:\data.txt",'w+')
 print('这是个测试',file=data)
 data.close()
 ```
+
+
+
+### csv 文件
+
+#### [csv.writer()](https://docs.python.org/zh-cn/3.9/library/csv.html )
+
+ csv.writer(*csvfile*, *dialect='excel'*, ***fmtparams*) 
+
+```PYTHON
+import csv
+with open('eggs.csv', 'w', newline='') as csvfile:
+    spamwriter = csv.writer(csvfile, delimiter=' ',
+                            quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    spamwriter.writerow(['Spam'] * 5 + ['Baked Beans'])
+    spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
+```
+
+
+
+
 
 
 
@@ -598,6 +617,25 @@ random_params
 
 
 
+#### [更优雅的输出数据 pprint](https://docs.python.org/3/library/pprint.html)
+
+ pprint.pprint(*object*, *stream=None*, *indent=1*, *width=80*, *depth=None*, *compact=False*) 
+
+```PYTHON
+>>> pprint.pprint(stuff, indent=4)
+[   ['spam', 'eggs', 'lumberjack', 'knights', 'ni'],
+    'spam',
+    'eggs',
+    'lumberjack',
+    'knights',
+    'ni']
+>>> pprint.pprint(stuff, width=41, compact=True)
+[['spam', 'eggs', 'lumberjack',
+  'knights', 'ni'],
+ 'spam', 'eggs', 'lumberjack', 'knights',
+ 'ni']
+```
+
 
 
 ## if 语句
@@ -677,6 +715,28 @@ t=test()
 
 # 打印结果是：aa, bb
 ```
+
+
+
+
+
+#### 文件操作
+
+```PYTHON
+if __name__ = "__main__":
+    if os.path.exists(ftr_output):
+        shutil.rmtree(ftr_output)
+    os.mkdir(ftr_output)
+    all_sqls, all_output_files = [], []
+    for sqls, domain in SQLS:
+        for i, sql in enumerate(sqls):
+            output_file = os.path.join(ftr_output, domain+str(i))
+            all_sqls.qppend(sql)
+            all_output_files.append(output_file)
+        Parallel(n_jobs=2, backend="multiprocessing")(delayed(sql_processor)(sql, output_file)) for sql, output_file in zip(all_sqls, all_output_files)
+```
+
+
 
 
 
@@ -794,6 +854,20 @@ name = input(prompt)  # prompt 中储存提示语句，输入变量存在name中
 
 
 
+#### [字符串类型转换  ast.literal_eval()](https://blog.csdn.net/Jerry_1126/article/details/68831254)
+
+```PYTHON
+import ast
+
+# Convert strings to dictionaries
+grid_results['hyperparameters'] = grid_results['hyperparameters'].map(ast.literal_eval)
+random_results['hyperparameters'] = random_results['hyperparameters'].map(ast.literal_eval)
+```
+
+
+
+
+
 ## 面向对象方法
 
 #### [更新对象绑定的方法](<https://www.jb51.net/article/109409.htm>)
@@ -846,6 +920,61 @@ print(azip.namelist())
 ```
 
 
+
+## 元组
+
+#### [具名元组 namedtuple](https://www.runoob.com/note/25726)
+
+[官方文档](https://docs.python.org/2/library/collections.html#collections.namedtuple)
+
+| 参数        | 备注                                                         |
+| ----------- | ------------------------------------------------------------ |
+| typename    | 元组名称                                                     |
+| field_names | 元组中元素的名称                                             |
+| rename      | 如果元素名称中含有 python 的关键字，则必须设置为 rename=True |
+| verbose     | 默认就好                                                     |
+
+
+
+```PYTHON
+# 声明一个具名元组及其实例化
+# 两种方法来给 namedtuple 定义方法名
+User = collections.namedtuple('User', ['name', 'age', 'id'])  # 方法1
+User = collections.namedtuple('User', 'name age id')  # 方法2
+user = User('tester', '22', '464643123')
+
+# 获取元组的属性
+from collections import namedtuple
+
+# 定义一个namedtuple类型User，并包含name，sex和age属性。
+User = namedtuple('User', ['name', 'sex', 'age'])
+
+# 创建一个User对象
+user = User(name='Runoob', sex='male', age=12)
+
+# 获取所有字段名
+print( user._fields )
+
+# 也可以通过一个list来创建一个User对象，这里注意需要使用"_make"方法
+user = User._make(['Runoob', 'male', 12])
+
+print( user )
+# User(name='user1', sex='male', age=12)
+
+# 获取用户的属性
+print( user.name )
+print( user.sex )
+print( user.age )
+
+# 修改对象属性，注意要使用"_replace"方法
+user = user._replace(age=22)
+print( user )
+# User(name='user1', sex='male', age=21)
+
+# 将User对象转换成字典，注意要使用"_asdict"
+print( user._asdict() )
+# OrderedDict([('name', 'Runoob'), ('sex', 'male'), ('age', 22)])
+```
 
 ## 列表 list
 
@@ -1282,6 +1411,28 @@ for i, (a, b) in enumerate(zip(seq1, seq2)):
 pitchers = [('Nolan', 'Ryan'), ('Roger', 'Clemens')]
 first_names, last_names = zip(*pitchers)
 ```
+
+
+
+### 迭代器
+
+#### 用迭代器循环执行函数 starmap
+
+```python
+join_res = starmap(join_tx_to_driver, tbl_to_join)  # 生成一个重复执行函数的迭代器
+collections.deque(join_res, maxlen=0)  # 执行函数
+```
+
+
+
+#### product
+
+```PYTHON
+ itertools import product
+   
+```
+
+
 
 ## 函数
 
@@ -2943,6 +3094,76 @@ combined = process_age()
 
 
 
+## 数据操作-循环
+
+#### [df.iterrows](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.iterrows.html)
+
+Iterate over DataFrame rows as (index, Series) pairs.
+
+* iterrows 不保证每一行返回的数据类型一致（见例1）；最好用itertuples()，速度一般也会快一些
+* iterator 返回一个 copy，不会对原数据直接做更改
+
+```PYTHON
+# 例1
+df = pd.DataFrame([[1, 1.5]], columns=['int', 'float'])
+row = next(df.iterrows())[1]
+row
+int      1.0
+float    1.5
+Name: 0, dtype: float64
+print(row['int'].dtype)
+float64
+print(df['int'].dtype)
+int64
+```
+
+
+
+#### [df.itertuples](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.itertuples.html#pandas.DataFrame.itertuples)
+
+Iterate over DataFrame rows as namedtuples.
+
+* 返回一个namedtuples类型的迭代器
+
+| 参数  | 类型                          | 备注           |
+| ----- | ----------------------------- | -------------- |
+| index | bool, default True            | 是否返回index  |
+| name  | str or None, default “Pandas” | 返回元组的名称 |
+
+
+
+```python
+df = pd.DataFrame({'num_legs': [4, 2], 'num_wings': [0, 2]},
+                  index=['dog', 'hawk'])
+
+df
+      num_legs  num_wings
+dog          4          0
+hawk         2          2
+
+for row in df.itertuples():
+    print(row)
+
+Pandas(Index='dog', num_legs=4, num_wings=0)
+Pandas(Index='hawk', num_legs=2, num_wings=2)
+```
+
+
+
+#### [df.items](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.items.html#pandas.DataFrame.items)
+
+按列迭代，返回 Iterate over (column name, Series) pairs.
+
+```PYTHON
+df = pd.DataFrame({'species': ['bear', 'bear', 'marsupial'],
+                  'population': [1864, 22000, 80000]},
+                  index=['panda', 'polar', 'koala'])
+
+for label, content in df.items():
+    print('label:', label)
+    print('content:', content, sep='\n')
+```
+
 
 
 ##  字符操作
@@ -3294,7 +3515,68 @@ more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more
 
 # Numpy
 
-### 矩阵
+#### 创建**ndarray**
+
+| 函数               | 说明                                   |
+| ------------------ | -------------------------------------- |
+| array              |                                        |
+| asarray            | 将输入转换为 ndarray                   |
+| arange             | 类似range, 但是返回 ndarray 而不是列表 |
+| ones / ones_like   | 创建全是1的数组                        |
+| zeros / zeros_like | 创建全是0的数组                        |
+| empty / empty_like | 创建空的数组                           |
+| eye / identity     | 创建对角线是1的数组                    |
+
+
+
+#### ndarray 元素级数组函数
+
+| 函数                                 | 说明 |
+| ------------------------------------ | ---- |
+| abs / fabs                           |      |
+| sqrt                                 |      |
+| square                               |      |
+| exp                                  |      |
+| log / log10 / log2/ log1p            |      |
+| sign                                 |      |
+| ceil                                 |      |
+| floor                                |      |
+| rint                                 |      |
+| modf                                 |      |
+| isnan                                |      |
+| isfinite / isinf                     |      |
+| cos / cosh / sin / sinh / tan / tanh |      |
+| arccos / arccosh / arcsin            |      |
+| arcsinh / arctan / arctanh           |      |
+| logical_not                          |      |
+
+
+
+####  二元函数 
+
+| 函数                                                         | 说明 |
+| ------------------------------------------------------------ | ---- |
+| add                                                          |      |
+| substract                                                    |      |
+| multiply                                                     |      |
+| divide / floor_divide                                        |      |
+| power                                                        |      |
+| maximum / fmax                                               |      |
+| minimum / fmin                                               |      |
+| mod                                                          |      |
+| copysign                                                     |      |
+| greater / greater_equal/ less / less_equal / equal / not_equal |      |
+| logical_and / logical_or / logical_xor                       |      |
+
+
+
+#### 条件逻辑表述为数组运算 np.where
+
+```PYTHON
+result = np.where(cond, xarr, yarr)
+```
+
+### 
 
 #### [矩阵插入新数据 np.insert(*arr***,** *obj***,** *values***,** *axis=None*) ](https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.insert.html)
 
@@ -3328,11 +3610,15 @@ X = np.insert(X_raw, 0, np.ones(X_raw.shape[0]), axis=1)#增加全部为1的一�
 
 #### 返回最大值的索引 np.argmax() 
 
+
+
 #### 生成序列  np.arange
 
 ```PYTHON
 np.arange(0.0, 5.0, 0.01)  #0-5，每隔0.01
 ```
+
+
 
 #### 增加多一维
 
@@ -3361,7 +3647,19 @@ upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.boo
 
 
 
+### 线性代数
 
+#### dot()
+
+```PYTHON
+# 1
+x.dot(y)
+
+# 2
+np.dot(x, np.ones(3))
+```
+
+### 
 
 ### 随机数模块random
 
