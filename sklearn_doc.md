@@ -2,6 +2,27 @@
 
 # sklearn
 
+#### 模型保存 pickle
+
+```PYTHON
+>>> from sklearn import svm
+>>> from sklearn import datasets
+>>> clf = svm.SVC()
+>>> X, y = datasets.load_iris(return_X_y=True)
+>>> clf.fit(X, y)
+SVC()
+
+>>> import pickle
+>>> s = pickle.dumps(clf)
+>>> clf2 = pickle.loads(s)
+>>> clf2.predict(X[0:1])
+array([0])
+>>> y[0]
+0
+```
+
+
+
 ## 数据处理
 
 #### [对齐数据框 pandas.DataFrame.align](https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.DataFrame.align.html)
