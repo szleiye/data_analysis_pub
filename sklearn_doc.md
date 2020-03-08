@@ -536,6 +536,71 @@ True
 
 ## [lightGBM](https://lightgbm.readthedocs.io/en/latest/)
 
+### Data Interface
+
+#### 读取numpy数据
+
+```python
+data = np.random.rand(500, 10)  # 500 entities, each contains 10 features
+label = np.random.randint(2, size=500)  # binary target
+train_data = lgb.Dataset(data, label=label)
+```
+
+
+
+#### 将数据存成 LightGBM binary 格式, 可快速读取
+
+```PYTHON
+train_data = lgb.Dataset('train.svm.txt')
+train_data.save_binary('train.bin')
+```
+
+
+
+#### 高效利用内存的方法
+
+* Numpy/Array/Pandas 对象很耗内存，LightGBM 的 `Dataset` 对象因为只存 discrete bins，所以省内存
+
+* 优化内存的方法如下：
+
+    1. Set `free_raw_data=True` (default is `True`) when constructing the `Dataset`
+
+    2. Explicitly set `raw_data=None` after the `Dataset` has been constructed
+
+    3. Call `gc`
+
+        
+
+
+
+### 原生API
+
+#### 训练模型 lgb.train
+
+```PYTHON
+bst = lgb.train(param, train_data, num_round, valid_sets=[validation_data])
+
+# 保存模型
+bst.save_model('model.txt')
+```
+
+
+
+#### 模型保存和加载
+
+```PYTHON
+# 模型保存
+gbm.save_model('model.txt')
+ 
+# 模型加载
+gbm = lgb.Booster(model_file='model.txt')
+
+```
+
+
+
+
+
 #### cv
 
 返回：字典，最佳树棵树的长度，存了auc值mean和std
@@ -560,6 +625,50 @@ cv_results = lgb.cv(default_params,
 ```
 
 
+
+### 类sklearnAPI
+
+#### [lightgbm.LGBMClassifier](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier)
+
+**方法**
+
+|方法|备注|
+|---|---|
+| [`__init__`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.__init__)([boosting_type, num_leaves, …]) | Construct a gradient boosting model.                         |
+| [`fit`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.fit)(X, y[, sample_weight, init_score, …]) | Build a gradient boosting model from the training set (X, y). |
+| [`get_params`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.get_params)([deep]) | Get parameters for this estimator.                           |
+| [`predict`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.predict)(X[, raw_score, num_iteration, …]) | Return the predicted value for each sample.                  |
+| [`predict_proba`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.predict_proba)(X[, raw_score, num_iteration, …]) | Return the predicted probability for each class for each sample. |
+| [`set_params`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.set_params)(**params) | Set the parameters of this estimator.                        |
+
+
+
+**属性**
+|属性|备注|
+|---|---|
+| [`best_iteration_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.best_iteration_) | Get the best iteration of fitted model.                   |
+| [`best_score_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.best_score_) | Get the best score of fitted model.                       |
+| [`booster_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.booster_) | Get the underlying lightgbm Booster of this model.        |
+| [`classes_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.classes_) | Get the class label array.                                |
+| [`evals_result_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.evals_result_) | Get the evaluation results.                               |
+| [`feature_importances_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.feature_importances_) | Get feature importances.                                  |
+| [`feature_name_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.feature_name_) | Get feature name.                                         |
+| [`n_classes_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.n_classes_) | Get the number of classes.                                |
+| [`n_features_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.n_features_) | Get the number of features of fitted model.               |
+| [`objective_`](https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMClassifier.html#lightgbm.LGBMClassifier.objective_) | Get the concrete objective used while fitting this model. |
+
+
+
+#### 模型保存和加载
+
+```PYTHON
+from sklearn.externals import joblib
+
+# 模型存储
+joblib.dump(gbm, 'loan_model.pkl')
+# 模型加载
+gbm = joblib.load('loan_model.pkl')
+```
 
 
 

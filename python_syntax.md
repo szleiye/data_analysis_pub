@@ -1414,11 +1414,24 @@ first_names, last_names = zip(*pitchers)
 
 
 
-### 迭代器
+## 迭代器
 
 #### 用迭代器循环执行函数 starmap
 
 ```python
+%%time
+tbl_to_join = [
+    (driver_tbl, tx_201707, tx_201707_join),
+    (driver_tbl, tx_201708, tx_201708_join),
+    (driver_tbl, tx_201709, tx_201709_join),
+    (driver_tbl, tx_201710, tx_201710_join),
+    (driver_tbl, tx_201711, tx_201711_join),
+    (driver_tbl, tx_201712, tx_201712_join),
+    (driver_tbl, tx_201801, tx_201801_join),
+    (driver_tbl, tx_201802, tx_201802_join),
+
+]
+
 join_res = starmap(join_tx_to_driver, tbl_to_join)  # 生成一个重复执行函数的迭代器
 collections.deque(join_res, maxlen=0)  # 执行函数
 ```
@@ -1553,6 +1566,29 @@ def clean_strings(strings, ops):
             value = function(value)
         result.append(value)
     return result
+```
+
+#### 装饰器
+
+```PYTHON
+from functools import wraps
+ 
+def a_new_decorator(a_func):
+    @wraps(a_func)
+    def wrapTheFunction():
+        print("I am doing some boring work before executing a_func()")
+        a_func()
+        print("I am doing some boring work after executing a_func()")
+    return wrapTheFunction
+ 
+@a_new_decorator
+def a_function_requiring_decoration():
+    """Hey yo! Decorate me!"""
+    print("I am the function which needs some decoration to "
+          "remove my foul smell")
+ 
+print(a_function_requiring_decoration.__name__)
+# Output: a_function_requiring_decoration
 ```
 
 
@@ -1793,7 +1829,89 @@ test_dict = {'id':[1,2,3,4,5,6],
 test=pd.DataFrame(test_dict)
 ```
 
+### HDFStore
+
+[HDF5 (PyTables) 官方文档](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html#hdf5-pytables)
+
+[large data working flow](https://stackoverflow.com/questions/14262433/large-data-work-flows-using-pandas)
+
+#### hdf文件简单写
+
+```PYTHON
+# 方法1
+store = pd.HDFStore('demo.h5')  # 创建一个hdf对象
+store['s'],store['df'] = s,df
+store.close()
+
+# 方法2 
+#导出到已存在的h5文件中，这里需要指定key
+df_.to_hdf(path_or_buf='demo.h5',key='df_')
+#创建于本地demo.h5进行IO连接的store对象
+store = pd.HDFStore('demo.h5')
+#查看指定h5对象中的所有键
+print(store.keys())
+```
+
+
+
+## 数据输出
+
+#### dataframe输出为表格
+
+```PYTHON
+from IPython.display import display, HTML
+
+# Assuming that dataframes df1 and df2 are already defined:
+print "Dataframe 1:"
+display(df1)
+print "Dataframe 2:"
+HTML(df2.to_html())
+```
+
+#### .to_csv 输出到文本格式
+
+````python
+# 按指定顺序排列
+data.to_csv(sys.stdout,index=False,cols=['a','b','c'])
+````
+
+### HDFS
+
+#### hdf 文件简单读
+
+```PYTHON
+store = pd.HDFStore('demo.h5')
+'''方式1'''
+df1 = store['df']
+'''方式2'''
+df2 = store.get('df')
+df1 == df2
+```
+
+#### 保存成 HDFS 文件
+
+```python
+# 将数据存成hdfstore格式
+store_compressed = pd.HDFStore('./process1/model1_data_compressed.h5',complevel=9,  complib='blosc:zstd')
+store_compressed['data'] = data
+store_compressed.close()
+```
+
+
+
 ## 数据描述
+
+#### 查看数据大小
+
+```PYTHON
+def return_size(df):
+    '''Return size of dataframe in gigabytes'''
+    return round(sys.getsizeof(df) / 1e9, 2)
+```
+
+
+
+
 
 #### 查看dataframe情况
 
@@ -1814,7 +1932,11 @@ dtypes: int64(2), object(3)
 memory usage: 180.6+ KB
 ```
 
-#### 查看数据格式 .dtypes 
+#### 查看数据格式 .dtypes
+
+[各类型数据的占用情况](https://www.dataquest.io/blog/pandas-big-data/#)
+
+#### <img src="assets/python_syntax/image-20200306210336178.png" alt="image-20200306210336178" style="zoom: 33%;" /> 
 
 ```PYTHON
 df.dtypes
@@ -2091,6 +2213,45 @@ dt_loan[list_1] = dt_loan[list_1].astype(float, copy=True)
 ```PYTHON
 df[['two', 'three']] = df[['two', 'three']].astype(float)
 ```
+
+#### 转换数据类型以节省内存
+
+```PYTHON
+def convert_types(df, print_info = False):
+    original_memory = df.memory_usage().sum()
+    
+    for c in df:  # Iterate through each column
+        
+        # Convert ids and booleans to integers
+        if 'SK_ID' in c:
+            df[c] = df[c].fillna(0).astype(np.int32)
+            
+        # 转换 object to categories
+        elif (df[c].dtype == 'object') and (df[c].nunique() < df.shape[0]):
+            df[c] = df[c].astype('category')
+    
+        # Booleans mapped to integers
+        elif list(df[c].unique()) == [1, 0]:
+            df[c] = df[c].astype(bool)
+        
+        # Float64 to float32
+        elif df[c].dtype == float:
+            df[c] = df[c].astype(np.float32)
+            
+        # Int64 to int32
+        elif df[c].dtype == int:
+            df[c] = df[c].astype(np.int32)
+        
+    new_memory = df.memory_usage().sum()
+    
+    if print_info:
+        print(f'Original Memory Usage: {round(original_memory / 1e9, 2)} gb.')
+        print(f'New Memory Usage: {round(new_memory / 1e9, 2)} gb.')
+        
+    return df
+```
+
+
 
 
 
@@ -3347,27 +3508,6 @@ index = pd.date_range('4/1/2012', '6/1/2012', freq='M')
 
 
 
-## 数据输出
-
-#### dataframe输出为表格
-
-```PYTHON
-from IPython.display import display, HTML
-
-# Assuming that dataframes df1 and df2 are already defined:
-print "Dataframe 1:"
-display(df1)
-print "Dataframe 2:"
-HTML(df2.to_html())
-```
-
-#### .to_csv 输出到文本格式
-
-````python
-# 按指定顺序排列
-data.to_csv(sys.stdout,index=False,cols=['a','b','c'])
-````
-
 ## 运算
 
 #### [df.add() 相加时填充值](<https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.add.html>)
@@ -3645,6 +3785,26 @@ array([[ 1,  2,  3],
 upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
 ```
 
+### 读写文件
+
+| 方法                                                         | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`load`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.load.html#numpy.load)(file[, mmap_mode, allow_pickle, …]) | Load arrays or pickled objects from `.npy`, `.npz` or pickled files. |
+| [`save`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.save.html#numpy.save)(file, arr[, allow_pickle, fix_imports]) | Save an array to a binary file in NumPy `.npy` format.       |
+| [`savez`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savez.html#numpy.savez)(file, \*args, \*\*kwds) | Save several arrays into a single file in uncompressed `.npz` format. |
+| [`savez_compressed`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.savez_compressed.html#numpy.savez_compressed)(file, \*args, \*\*kwds) | Save several arrays into a single file in compressed `.npz` format. |
+
+
+```PYTHON
+np.savez_compressed('process1/y_loc_train_z', y_loc_train)
+
+# 读取压缩后的文件
+X_loc_train = np.load('process1/X_loc_train.npz')
+X_loc_train = X_loc_train["arr_0"]
+```
+
+
+
 
 
 ### 线性代数
@@ -3659,7 +3819,7 @@ x.dot(y)
 np.dot(x, np.ones(3))
 ```
 
-### 
+
 
 ### 随机数模块random
 
