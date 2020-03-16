@@ -156,6 +156,18 @@ WHERE pos < 3;
 
 
 
+#### 线性回归 regr_slope(Y, X)
+
+```PYTHON
+SELECT
+    prd_type_id,
+    REGR_SLOPE(amount, month) AS slope
+FROM all_sales
+GROUP BY prd_type_id;
+```
+
+
+
 ## 系统表
 
 ### information_schema

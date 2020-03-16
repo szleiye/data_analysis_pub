@@ -275,6 +275,13 @@ from module_name import function_name as fn
 
 
 
+#### 重新导入修改后的包
+
+ ```python 
+ import importlib
+ importlib.reload(itools)
+ ```
+
 
 
 
@@ -294,51 +301,6 @@ warnings.simplefilter('ignoree')
 
 
 ## 数据加载
-
-#### 获取当前路径
-
-```PYTHON
-import os
-#当前文件夹的绝对路径
-path1=os.path.abspath('.')
-#当前文件夹的上级文件夹的绝对路径
-path1=os.path.abspath('..')
-```
-
-
-
-#### 绝对路径和相对路径写法
-
-
-我们常用`/`来表示相对路径，`\`来表示绝对路径，上面的路径里\\\是转义的意思，不懂的自行百度。
-
-```PYTHON
-open('aaa.txt')
-open('/data/bbb.txt')
-open('D:\\user\\ccc.txt')
-```
-
-
-
-#### 判断文件是否存在 os.path.isfile() 
-
-```PYTHON
-if os.path.isfile(dt_fname):
-    pass
-else:
-    data=pd.read_csv()
-```
-
-
-
-#### 看当前文件夹下有什么文件 os.listdir()
-
-```PYTHON
-# 看文件夹内有什么数据
-os.listdir('./data/home-credit-default-risk/')
-```
-
-
 
 
 
@@ -718,9 +680,54 @@ t=test()
 
 
 
+## 文件和文件夹操作
+
+#### 获取当前路径
+
+```PYTHON
+import os
+#当前文件夹的绝对路径
+path1=os.path.abspath('.')
+#当前文件夹的上级文件夹的绝对路径
+path1=os.path.abspath('..')
+```
 
 
-#### 文件操作
+
+#### 绝对路径和相对路径写法
+
+
+我们常用`/`来表示相对路径，`\`来表示绝对路径，上面的路径里\\\是转义的意思，不懂的自行百度。
+
+```PYTHON
+open('aaa.txt')
+open('/data/bbb.txt')
+open('D:\\user\\ccc.txt')
+```
+
+
+
+#### 判断文件是否存在 os.path.isfile() 
+
+```PYTHON
+if os.path.isfile(dt_fname):
+    pass
+else:
+    data=pd.read_csv()
+```
+
+
+
+#### 看当前文件夹下有什么文件 os.listdir()
+
+```PYTHON
+# 看文件夹内有什么数据
+os.listdir('./data/home-credit-default-risk/')
+```
+
+
+
+#### 递归删除文件夹下所有子文件和子文件夹 shutil.rmtree() 
 
 ```PYTHON
 if __name__ = "__main__":
@@ -919,9 +926,40 @@ with zipfile.ZipFile('./exampleproject/_9_home_credit/data/home-credit-default-r
 print(azip.namelist())
 ```
 
+## 迭代器
+
+#### 用迭代器循环执行函数 starmap
+
+```python
+%%time
+tbl_to_join = [
+    (driver_tbl, tx_201707, tx_201707_join),
+    (driver_tbl, tx_201708, tx_201708_join),
+    (driver_tbl, tx_201709, tx_201709_join),
+    (driver_tbl, tx_201710, tx_201710_join),
+    (driver_tbl, tx_201711, tx_201711_join),
+    (driver_tbl, tx_201712, tx_201712_join),
+    (driver_tbl, tx_201801, tx_201801_join),
+    (driver_tbl, tx_201802, tx_201802_join),
+
+]
+
+join_res = starmap(join_tx_to_driver, tbl_to_join)  # 生成一个重复执行函数的迭代器
+collections.deque(join_res, maxlen=0)  # 执行函数
+```
 
 
-## 元组
+
+#### product
+
+```PYTHON
+ itertools import product
+   
+```
+
+
+
+### 元组
 
 #### [具名元组 namedtuple](https://www.runoob.com/note/25726)
 
@@ -976,7 +1014,7 @@ print( user._asdict() )
 # OrderedDict([('name', 'Runoob'), ('sex', 'male'), ('age', 22)])
 ```
 
-## 列表 list
+### 列表 list
 
 
 
@@ -1129,11 +1167,7 @@ filtered = [item for item in items if item > 5]
 
 
 
-
-
-
-
-## 字典 dict
+### 字典 dict
 
 #### 遍历字典的键值对 dict.items()
 
@@ -1274,7 +1308,7 @@ for name, languages in favorite_languages.items():
 
 
 
-## 集合 set
+### 集合 set
 
 #### 创建一个set
 
@@ -1309,6 +1343,46 @@ a_set = {1, 2, 3, 4, 5, }
 
 ```python
 a_set.issuperset({1, 2, 3})
+```
+
+
+
+### 内置序列函数
+
+#### enumerate 逐个返回序列的(i, value) 元组
+
+```PYTHON
+for i, value in enumerate(collection):
+    pass
+
+# 将一个序列映射到其所在位置的字典
+some_list = ['foo', 'bar', 'baz']
+mapping = dict((v, i) for i, v in enumerate(some_list))
+```
+
+#### sorted 返回一个新的有序序列
+
+```PYTHON
+sorted(set('this is just some string')) # 返回唯一元素组成的有序序列
+```
+
+#### zip 将多个序列元素配对，产生新的元组列表
+
+```PYTHON
+seq1 = ['foo', 'bar', 'baz']
+seq2 = ['one', 'two', 'three']
+zip(seq1, seq2)  # 返回[('foo', 'one'), ('bar', 'two'), ('baz', 'three')]
+
+# 常见用法是迭代多个序列，还可以配合enumerate一起使用
+for i, (a, b) in enumerate(zip(seq1, seq2)):
+    print('%d: %s, %s' % (i, a, b))
+```
+
+#### zip 将序列解压还原
+
+```PYTHON
+pitchers = [('Nolan', 'Ryan'), ('Roger', 'Clemens')]
+first_names, last_names = zip(*pitchers)
 ```
 
 
@@ -1374,76 +1448,7 @@ for char in bar:
 
 
 
-## 内置序列函数
 
-#### enumerate 逐个返回序列的(i, value) 元组
-
-```PYTHON
-for i, value in enumerate(collection):
-    pass
-
-# 将一个序列映射到其所在位置的字典
-some_list = ['foo', 'bar', 'baz']
-mapping = dict((v, i) for i, v in enumerate(some_list))
-```
-
-#### sorted 返回一个新的有序序列
-
-```PYTHON
-sorted(set('this is just some string')) # 返回唯一元素组成的有序序列
-```
-
-#### zip 将多个序列元素配对，产生新的元组列表
-
-```PYTHON
-seq1 = ['foo', 'bar', 'baz']
-seq2 = ['one', 'two', 'three']
-zip(seq1, seq2)  # 返回[('foo', 'one'), ('bar', 'two'), ('baz', 'three')]
-
-# 常见用法是迭代多个序列，还可以配合enumerate一起使用
-for i, (a, b) in enumerate(zip(seq1, seq2)):
-    print('%d: %s, %s' % (i, a, b))
-```
-
-#### zip 将序列解压还原
-
-```PYTHON
-pitchers = [('Nolan', 'Ryan'), ('Roger', 'Clemens')]
-first_names, last_names = zip(*pitchers)
-```
-
-
-
-## 迭代器
-
-#### 用迭代器循环执行函数 starmap
-
-```python
-%%time
-tbl_to_join = [
-    (driver_tbl, tx_201707, tx_201707_join),
-    (driver_tbl, tx_201708, tx_201708_join),
-    (driver_tbl, tx_201709, tx_201709_join),
-    (driver_tbl, tx_201710, tx_201710_join),
-    (driver_tbl, tx_201711, tx_201711_join),
-    (driver_tbl, tx_201712, tx_201712_join),
-    (driver_tbl, tx_201801, tx_201801_join),
-    (driver_tbl, tx_201802, tx_201802_join),
-
-]
-
-join_res = starmap(join_tx_to_driver, tbl_to_join)  # 生成一个重复执行函数的迭代器
-collections.deque(join_res, maxlen=0)  # 执行函数
-```
-
-
-
-#### product
-
-```PYTHON
- itertools import product
-   
-```
 
 
 
@@ -1593,7 +1598,11 @@ print(a_function_requiring_decoration.__name__)
 
 
 
-### 类
+ #### [返回迭代器的函数 yield](https://www.runoob.com/w3cnote/python-yield-used-analysis.html)
+
+ 带有 yield 的函数在 Python 中被称之为 generator（生成器）
+
+## 类
 
 #### 创建类 
 
@@ -2398,6 +2407,15 @@ article = json.dumps(data, ensure_ascii=False)
 print(article)
 ```
 
+#### 小数转为百分数
+
+```PYTHON
+data = pd.read_excel(inputfile)
+data[u'线损率'] = (data[u'供入电量']-data[u'供出电量'])/data[u'供入电量']    #data[u'线损率']的类型为series； data[u'线损率']为小数
+data[u'线损率'] = data[u'线损率'].apply(lambda x: format(x, '.2%')) 
+
+```
+
 
 
 ## 数据操作
@@ -2553,6 +2571,19 @@ cats = pd.cut(ages,10)
 temp = pd.DataFrame(cats)
 temp.columns = ['a']
 temp['b'] = temp.a.apply(lambda x:x.left)
+```
+
+
+
+#### [做差分 df.diff](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html)
+
+| 参数    | 类型                                      | 备注                                                         |
+| ------- | ----------------------------------------- | ------------------------------------------------------------ |
+| periods | int, default 1                            | Periods to shift for calculating difference, accepts negative values<br />和前几行数据做差，复数表示和下面的行做差 |
+| axis    | {0 or ‘index’, 1 or ‘columns’}, default 0 | Take difference over rows (0) or columns (1)                 |
+
+```PYTHON
+
 ```
 
 
