@@ -59,6 +59,22 @@ WITH
 
 
 
+#### [排序让空值靠后](https://www.cnblogs.com/sunxun/p/6802989.html)
+
+**Oracle/Pgsql** 
+`order by colum asc` 时，null默认被放在最后
+`order by colum desc `时，null默认被放在最前
+`nulls first` 时，强制null放在最前，不为null的按声明顺序[asc|desc]进行排序
+`nulls last` 时，强制null放在最后，不为null的按声明顺序[asc|desc]进行排序 
+
+
+
+**MySql**
+`order by colum asc` 时，null默认被放在最前
+`order by colum desc `时，null默认被放在最后
+`ORDER BY IF(ISNULL(update_date),0,1)` null被强制放在最前，不为null的按声明顺序[asc|desc]进行排序
+`ORDER BY IF(ISNULL(update_date),1,0)` null被强制放在最后，不为null的按声明顺序[asc|desc]进行排序
+
 ### 分组聚合
 
 #### grouping set 分组集

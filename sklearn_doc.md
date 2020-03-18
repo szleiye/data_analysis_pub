@@ -472,6 +472,11 @@ graph = graphviz.Source(dot_data)
 graph 
 ```
 
+```
+# 直接在linux中将dot文件转成图
+dot -Tpng iris_tree.dot -o iris_tree.png
+```
+
 
 
 ## 随机森林 
