@@ -1146,6 +1146,19 @@ x.extend([7, 8, (2, 3)])
 
 
 
+#### 统计某个元素在列表中出现的次数 list.count(obj)
+
+```PYTHON
+aList = [123, 'xyz', 'zara', 'abc', 123];
+
+print "Count for 123 : ", aList.count(123);
+print "Count for zara : ", aList.count('zara');
+```
+
+
+
+
+
 #### 列表、集合以及字典的推导式
 
 ```python
@@ -2066,6 +2079,8 @@ app_train['DAYS_BIRTH'].corr(app_train['TARGET'])
 dt_loan.index.name = "index_rid"
 ```
 
+
+
 #### 修改列名 .columns /.rename 
 
 ```PYTHON
@@ -2078,6 +2093,8 @@ a.rename(columns={'A':'a', 'B':'b', 'C':'c'}, inplace = True)
 frame3.columns.name='state'
 ```
 
+
+
 #### 重新索引 .reindex() 
 
 ```PYTHON
@@ -2089,6 +2106,8 @@ frame.reindex(['a','b','c','d'])
 frame.reindex(columns=['Texas','Utah','California'])
 
 ```
+
+
 
 #### 重命名索引 dataframe.index.map()  dataframe.index.rename()
 
@@ -2103,11 +2122,34 @@ data.rename(index=str.title, columns=str.upper)
 data.rename(index={'OHIO': 'INDIANA'}, columns={'three', 'peekaboo'})
 ```
 
+
+
 #### 笛卡尔积生成多重索引 pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']])
 
 ```PYTHON
 s_mi = pd.Series(np.arange(6), index=pd.MultiIndex.from_product([[0, 1], ['a', 'b', 'c']]))
 ```
+
+
+
+#### [返回删除特定元素后的索引 pandas.Index.difference](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.difference.html?highlight=difference#pandas-index-difference)
+
+Return a new Index with elements from the index that are not in other.
+
+```PYTHON
+>>> idx1 = pd.Index([2, 1, 3, 4])
+>>> idx2 = pd.Index([3, 4, 5, 6])
+>>> idx1.difference(idx2)
+Int64Index([1, 2], dtype='int64')
+>>> idx1.difference(idx2, sort=False)
+Int64Index([2, 1], dtype='int64')
+```
+
+
+
+
+
+
 
 ### 多重索引
 

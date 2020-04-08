@@ -126,6 +126,188 @@ poly_transformer.get_feature_names(input_features = ['EXT_SOURCE_1', 'EXT_SOURCE
 
 
 
+## 样本处理
+
+### 随机欠采样
+
+```PYTHON
+# ------ 方法1 ------ 
+# Shuffle the Dataset.
+shuffled_df = credit_df.sample(frac=1,random_state=4)
+
+# Put all the fraud class in a separate dataset.
+fraud_df = shuffled_df.loc[shuffled_df['Class'] == 1]
+
+#Randomly select 492 observations from the non-fraud (majority class)
+non_fraud_df = shuffled_df.loc[shuffled_df['Class'] == 0].sample(n=492,random_state=42)
+
+# Concatenate both dataframes again
+normalized_df = pd.concat([fraud_df, non_fraud_df])
+
+#plot the dataset after the undersampling
+plt.figure(figsize=(8, 8))
+
+sns.countplot('Class', data=normalized_df)
+plt.title('Balanced Classes')
+plt.show()
+
+# ------ 方法2 ------
+# RandomUnderSampler函数是一种快速并十分简单的方式来平衡各个类别的数据: 随机选取数据的子集.
+from imblearn.under_sampling import RandomUnderSampler
+rus = RandomUnderSampler(random_state=0)
+X_resampled, y_resampled = rus.fit_sample(X, y)
+
+```
+
+
+
+#### SMOTE算法(过采样)
+
+```PYTHON
+from imblearn.over_sampling import SMOTE
+
+# Resample the minority class. You can change the strategy to 'auto' if you are not sure.
+sm = SMOTE(sampling_strategy='minority', random_state=7)
+
+# Fit the model to generate the data.
+oversampled_trainX, oversampled_trainY = sm.fit_sample(credit_df.drop('Class', axis=1), credit_df['Class'])
+oversampled_train = pd.concat([pd.DataFrame(oversampled_trainY), pd.DataFrame(oversampled_trainX)], axis=1)
+oversampled_train.columns = normalized_df.columns
+
+```
+
+#### ADASYN
+
+```PYTHON
+from imblearn.over_sampling import ADASYN
+
+X_resampled_adasyn, y_resampled_adasyn = ADASYN().fit_sample(X, y)
+sorted(Counter(y_resampled_adasyn).items())
+# [(0, 2522), (1, 2520), (2, 2532)]
+```
+
+
+
+#### 集成算法+采样
+
+##### [BalancedBaggingClassifier](https://imbalanced-learn.readthedocs.io/en/stable/generated/imblearn.ensemble.BalancedBaggingClassifier.html#imblearn.ensemble.BalancedBaggingClassifier)
+
+```PYTHON
+from imblearn.ensemble import BalancedBaggingClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+#Create an object of the classifier.
+bbc = BalancedBaggingClassifier(base_estimator=DecisionTreeClassifier(),
+                                sampling_strategy='auto', 
+                                replacement=False, 
+                                random_state=0)
+y_train = credit_df['Class']
+X_train = credit_df.drop(['Class'], axis=1, inplace=False)
+
+#Train the classifier.
+bbc.fit(X_train, y_train)
+preds = bbc.predict(X_train)
+
+```
+
+
+
+```PYTHON
+# 生成不平衡分类数据集
+from collections import Counter
+from sklearn.datasets import make_classification
+X, y = make_classification(n_samples=3000, n_features=2, n_informative=2,
+                           n_redundant=0, n_repeated=0, n_classes=3,
+                           n_clusters_per_class=1,
+                           weights=[0.1, 0.05, 0.85],
+                           class_sep=0.8, random_state=2018)
+Counter(y)
+# Counter({2: 2532, 1: 163, 0: 305})
+
+# 使用RandomOverSampler从少数类的样本中进行随机采样来增加新的样本使各个分类均衡
+from imblearn.over_sampling import RandomOverSampler
+ 
+ros = RandomOverSampler(random_state=0)
+X_resampled, y_resampled = ros.fit_sample(X, y)
+sorted(Counter(y_resampled).items())
+# [(0, 2532), (1, 2532), (2, 2532)]
+
+# SMOTE: 对于少数类样本a, 随机选择一个最近邻的样本b, 然后从a与b的连线上随机选取一个点c作为新的少数类样本
+from imblearn.over_sampling import SMOTE
+ 
+X_resampled_smote, y_resampled_smote = SMOTE().fit_sample(X, y)
+ 
+sorted(Counter(y_resampled_smote).items())
+# [(0, 2532), (1, 2532), (2, 2532)]
+
+# ADASYN: 关注的是在那些基于K最近邻分类器被错误分类的原始样本附近生成新的少数类样本
+from imblearn.over_sampling import ADASYN
+
+X_resampled_adasyn, y_resampled_adasyn = ADASYN().fit_sample(X, y)
+ 
+sorted(Counter(y_resampled_adasyn).items())
+# [(0, 2522), (1, 2520), (2, 2532)]
+
+# RandomUnderSampler函数是一种快速并十分简单的方式来平衡各个类别的数据: 随机选取数据的子集.
+from imblearn.under_sampling import RandomUnderSampler
+rus = RandomUnderSampler(random_state=0)
+X_resampled, y_resampled = rus.fit_sample(X, y)
+ 
+sorted(Counter(y_resampled).items())
+# [(0, 163), (1, 163), (2, 163)]
+
+# 在之前的SMOTE方法中, 当由边界的样本与其他样本进行过采样差值时, 很容易生成一些噪音数据. 因此, 在过采样之后需要对样本进行清洗. 
+# 这样TomekLink 与 EditedNearestNeighbours方法就能实现上述的要求.
+from imblearn.combine import SMOTEENN
+smote_enn = SMOTEENN(random_state=0)
+X_resampled, y_resampled = smote_enn.fit_sample(X, y)
+ 
+sorted(Counter(y_resampled).items())
+# [(0, 2111), (1, 2099), (2, 1893)]
+
+from imblearn.combine import SMOTETomek
+smote_tomek = SMOTETomek(random_state=0)
+X_resampled, y_resampled = smote_tomek.fit_sample(X, y)
+ 
+sorted(Counter(y_resampled).items())
+# [(0, 2412), (1, 2414), (2, 2396)]
+
+# 使用SVM的权重调节处理不均衡样本 权重为balanced 意味着权重为各分类数据量的反比
+from sklearn.svm import SVC  
+svm_model = SVC(class_weight='balanced')
+svm_model.fit(X, y)
+
+# # EasyEnsemble 通过对原始的数据集进行随机下采样实现对数据集进行集成.
+# EasyEnsemble 有两个很重要的参数: (i) n_subsets 控制的是子集的个数 and (ii) replacement 决定是有放回还是无放回的随机采样.
+from imblearn.ensemble import EasyEnsemble
+ee = EasyEnsemble(random_state=0, n_subsets=10)
+X_resampled, y_resampled = ee.fit_sample(X, y)
+sorted(Counter(y_resampled[0]).items())
+# [(0, 163), (1, 163), (2, 163)]
+
+# BalanceCascade(级联平衡)的方法通过使用分类器(estimator参数)来确保那些被错分类的样本在下一次进行子集选取的时候也能被采样到. 同样, n_max_subset 参数控制子集的个数, 以及可以通过设置bootstrap=True来使用bootstraping(自助法).
+from imblearn.ensemble import BalanceCascade
+from sklearn.linear_model import LogisticRegression
+bc = BalanceCascade(random_state=0,
+                    estimator=LogisticRegression(random_state=0),
+                    n_max_subset=4)
+X_resampled, y_resampled = bc.fit_sample(X, y)
+ 
+sorted(Counter(y_resampled[0]).items())
+# [(0, 163), (1, 163), (2, 163)]
+
+# BalancedBaggingClassifier 允许在训练每个基学习器之前对每个子集进行重抽样. 简而言之, 该方法结合了EasyEnsemble采样器与分类器(如BaggingClassifier)的结果.
+from sklearn.tree import DecisionTreeClassifier
+from imblearn.ensemble import BalancedBaggingClassifier
+bbc = BalancedBaggingClassifier(base_estimator=DecisionTreeClassifier(),
+                                ratio='auto',
+                                replacement=False,
+                                random_state=0)
+bbc.fit(X, y) 
+
+
+```
+
 
 
 ## Cross-validation
