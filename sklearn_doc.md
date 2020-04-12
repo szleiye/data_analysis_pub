@@ -859,6 +859,47 @@ gbm = joblib.load('loan_model.pkl')
 
 
 
+#### 例子
+
+```PYTHON
+import lightgbm as lgb
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import GridSearchCV
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
+ 
+# 加载数据
+iris = load_iris()
+data = iris.data
+target = iris.target
+X_train, X_test, y_train, y_test = train_test_split(data, target, test_size=0.2)
+ 
+# 创建模型，训练模型
+gbm = lgb.LGBMRegressor(objective='regression', num_leaves=31, learning_rate=0.05, n_estimators=20)
+gbm.fit(X_train, y_train, eval_set=[(X_test, y_test)], eval_metric='l1', early_stopping_rounds=5)
+ 
+# 测试机预测
+y_pred = gbm.predict(X_test, num_iteration=gbm.best_iteration_)
+ 
+# 模型评估
+print('The rmse of prediction is:', mean_squared_error(y_test, y_pred) ** 0.5)
+ 
+# feature importances
+print('Feature importances:', list(gbm.feature_importances_))
+ 
+# 网格搜索，参数优化
+estimator = lgb.LGBMRegressor(num_leaves=31)
+param_grid = {
+    'learning_rate': [0.01, 0.1, 1],
+    'n_estimators': [20, 40]
+}
+gbm = GridSearchCV(estimator, param_grid)
+gbm.fit(X_train, y_train)
+print('Best parameters found by grid search are:', gbm.best_params_)
+```
+
+
+
 ## 评价标准
 
 #### [sklearn.metrics.roc_curve]( https://blog.csdn.net/u014264373/article/details/80487766)
@@ -901,7 +942,109 @@ plt.show()
 
 
 
+## 模型选择
+
+### Computing cross-validated metrics
+
+| 方法              | 备注                                            |
+| ----------------- | ----------------------------------------------- |
+| cross_val_score   | 返回用k-折模型之后的平均分                      |
+| cross_validate    | 可以返回多个评价指标，和训练时间；返回estimator |
+| cross_val_predict | 返回每个样本做测试集时候得到的分数              |
 
 
 
+#### [cross_val_score](https://scikit-learn.org/stable/modules/classes.html#module-sklearn.model_selection.cross_val_score)
+
+Evaluate a score by cross-validation
+
+```PYTHON
+# 5-fold
+>>> from sklearn import metrics
+>>> scores = cross_val_score(clf, X, y, cv=5, scoring='f1_macro')
+>>> scores
+
+# 用别的cv 
+>>> from sklearn.model_selection import ShuffleSplit
+>>> n_samples = X.shape[0]
+>>> cv = ShuffleSplit(n_splits=5, test_size=0.3, random_state=0)
+>>> cross_val_score(clf, X, y, cv=cv)
+
+# 用自定义的cv
+>>> def custom_cv_2folds(X):
+...     n = X.shape[0]
+...     i = 1
+...     while i <= 2:
+...         idx = np.arange(n * (i - 1) / 2, n * i / 2, dtype=int)
+...         yield idx, idx
+...         i += 1
+...
+>>> custom_cv = custom_cv_2folds(X)
+>>> cross_val_score(clf, X, y, cv=custom_cv)
+array([1.        , 0.973...])
+```
+
+
+
+#### [cross_validate](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_validate.html#sklearn.model_selection.cross_validate)
+
+Evaluate metric(s) by cross-validation and also record fit/score times.
+
+- It allows specifying multiple metrics for evaluation.
+- It returns a dict containing fit-times, score-times (and optionally training scores as well as fitted estimators) in addition to the test score.
+- It can return estimators.
+
+
+
+#### [cross_val_predict](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_predict.html#sklearn.model_selection.cross_val_predict)
+
+返回每个样本做测试集时候得到的分数， `cross_val_score`则是返回average over cross-validation folds
+
+**返回值：**
+
+| 返回值 | 类型 | 备注                                                         |
+| ------ | ---- | ------------------------------------------------------------ |
+| scores | 字典 | 包含`test_score`, `train_score`, `fit_time`, `score_time`, `estimator` |
+
+
+
+## [贝叶斯调参](https://github.com/fmfn/BayesianOptimization)
+
+```PYTHON
+from bayes_opt import BayesianOptimization
+
+# Bounded region of parameter space
+pbounds = {'x': (2, 4), 'y': (-3, 3)}
+
+optimizer = BayesianOptimization(
+    f=black_box_function,
+    pbounds=pbounds,
+    random_state=1,
+)
+
+# 
+optimizer.maximize(
+    init_points=2,
+    n_iter=3,
+)
+
+# 
+print(optimizer.max)
+>>> {'target': -4.441293113411222, 'params': {'y': -0.005822117636089974, 'x': 2.104665051994087}}
+
+# 
+for i, res in enumerate(optimizer.res):
+    print("Iteration {}: \n\t{}".format(i, res))
+
+>>> Iteration 0:
+>>>     {'target': -7.135455292718879, 'params': {'y': 1.3219469606529488, 'x': 2.8340440094051482}}
+>>> Iteration 1:
+>>>     {'target': -7.779531005607566, 'params': {'y': -1.1860045642089614, 'x': 2.0002287496346898}}
+>>> Iteration 2:
+>>>     {'target': -19.0, 'params': {'y': 3.0, 'x': 4.0}}
+>>> Iteration 3:
+>>>     {'target': -16.29839645063864, 'params': {'y': -2.412527795983739, 'x': 2.3776144540856503}}
+>>> Iteration 4:
+>>>     {'target': -4.441293113411222, 'params': {'y': -0.005822117636089974, 'x': 2.104665051994087}}
+```
 

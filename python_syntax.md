@@ -926,7 +926,13 @@ with zipfile.ZipFile('./exampleproject/_9_home_credit/data/home-credit-default-r
 print(azip.namelist())
 ```
 
-## 迭代器
+## 容器 container
+
+[盘一盘 Python 系列特别篇 - Collection](https://mp.weixin.qq.com/s/lPQzXF8AZNnPe9HRexQEMQ)
+
+<img src="assets/python_syntax/640.png" alt="img" style="zoom:50%;" />
+
+### 迭代器 iterator
 
 #### 用迭代器循环执行函数 starmap
 
@@ -974,30 +980,53 @@ collections.deque(join_res, maxlen=0)  # 执行函数
 
 
 
-```PYTHON
-# 声明一个具名元组及其实例化
-# 两种方法来给 namedtuple 定义方法名
-User = collections.namedtuple('User', ['name', 'age', 'id'])  # 方法1
-User = collections.namedtuple('User', 'name age id')  # 方法2
-user = User('tester', '22', '464643123')
+**声明一个具名元组**
 
+```PYTHON
 # 获取元组的属性
 from collections import namedtuple
 
-# 定义一个namedtuple类型User，并包含name，sex和age属性。
-User = namedtuple('User', ['name', 'sex', 'age'])
+# 声明一个具名元组及其实例化
+# 两种方法来给 namedtuple 定义方法名
+User = namedtuple('User', ['name', 'age', 'id'])  # 方法1
+User = namedtuple('User', 'name age id')  # 方法2
 
+```
+
+
+
+**创建一个具名元组对象**
+
+```PYTHON
 # 创建一个User对象
 user = User(name='Runoob', sex='male', age=12)
-
-# 获取所有字段名
-print( user._fields )
 
 # 也可以通过一个list来创建一个User对象，这里注意需要使用"_make"方法
 user = User._make(['Runoob', 'male', 12])
 
-print( user )
-# User(name='user1', sex='male', age=12)
+```
+
+
+
+**获取具名元组元素**
+
+- 像元祖那样用数值索引
+- 像对象那样用点 .
+- 像对象那样用函数 getattr
+
+```PYTHON
+print( product[0] )
+print( product.asset )
+print( getattr(product, 'asset') )
+```
+
+
+
+**相关方法**
+
+```PYTHON
+# 获取所有字段名
+print( user._fields )
 
 # 获取用户的属性
 print( user.name )
@@ -1013,6 +1042,8 @@ print( user )
 print( user._asdict() )
 # OrderedDict([('name', 'Runoob'), ('sex', 'male'), ('age', 22)])
 ```
+
+
 
 ### 列表 list
 
@@ -1276,15 +1307,7 @@ for word in words:
 	by_letter.setdefault(letter, []).append(word)  # 如果没有找到键，第一次先生成该键并对应值是空列表
 ```
 
-#### defaultdict类
 
-```PYTHON
-from collections import defaultdict
-by_letter = defaultdict(list)
-
-for word in words:
-    by_letter[word[0]].append(word)
-```
 
 #### 列表中嵌套字典
 
@@ -1316,6 +1339,52 @@ for name, languages in favorite_languages.items():
 
 
 ####  字典嵌套字典
+
+
+
+### defaultdict类
+
+默认字典 (defaultdict) 和字典不同，我们不需要检查键是否存在，对于不存在的键，会赋一个默认值。
+
+```PYTHON
+from collections import defaultdict
+by_letter = defaultdict(list)
+
+for word in words:
+    by_letter[word[0]].append(word)  # 初始时不存在by_letter[word[0]]这个键，直接创建一个空列表
+    
+# int 型
+nums = defaultdict(int)  
+nums['one'] = 1
+nums['two'] = 2
+nums['three'] = 3 
+print( nums )
+>>> defaultdict(<class 'int'>, {'one': 1, 'two': 2, 'three': 3, 'four': 0})
+
+# list 型
+def_dict = defaultdict(list)
+def_dict['one'] = 1
+def_dict['missing']
+def_dict['another_missing'].append(4)
+def_dict
+>>> defaultdict(list, {'one': 1, 'missing': [], 'another_missing': [4]})
+```
+
+
+
+### Counter 
+
+计数器 (Counter) 是字典的子类，提供了可哈希（hashable）对象的计数功能。可哈希就是可修改（mutable），比如列表就是可哈希或可修改。
+
+```PYTHON
+l = [1,2,3,4,1,2,6,7,3,8,1,2,2]  
+answer = Counter(l)
+print(answer)
+print(answer[2])
+
+# Counter({2: 4, 1: 3, 3: 2, 4: 1, 6: 1, 7: 1, 8: 1})
+# 4
+```
 
 
 
