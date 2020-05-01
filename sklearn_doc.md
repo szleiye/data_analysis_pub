@@ -5,20 +5,24 @@
 #### 模型保存 pickle
 
 ```PYTHON
->>> from sklearn import svm
->>> from sklearn import datasets
->>> clf = svm.SVC()
->>> X, y = datasets.load_iris(return_X_y=True)
->>> clf.fit(X, y)
-SVC()
+# 1
+from sklearn import svm
+from sklearn import datasets
+import pickle
 
->>> import pickle
->>> s = pickle.dumps(clf)
->>> clf2 = pickle.loads(s)
->>> clf2.predict(X[0:1])
-array([0])
->>> y[0]
-0
+clf = svm.SVC()
+X, y = datasets.load_iris(return_X_y=True)
+clf.fit(X, y)
+
+s = pickle.dumps(clf)
+clf2 = pickle.loads(s)
+clf2.predict(X[0:1])
+
+
+# 2 输出pickle文件
+output = open('./model/feature_select_lgb.pkl', 'wb')
+pickle.dump(bst, output)
+output.close()
 ```
 
 
@@ -28,6 +32,43 @@ array([0])
 #### [对齐数据框 pandas.DataFrame.align](https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.DataFrame.align.html)
 
 
+
+#### 转换数据类型以节省内存
+
+```PYTHON
+def convert_types(df, print_info = False):
+    original_memory = df.memory_usage().sum()
+    
+    for c in df:  # Iterate through each column
+        
+        # Convert ids and booleans to integers
+        if 'SK_ID' in c:
+            df[c] = df[c].fillna(0).astype(np.int32)
+            
+        # 转换 object to categories
+        elif (df[c].dtype == 'object') and (df[c].nunique() < df.shape[0]):
+            df[c] = df[c].astype('category')
+    
+        # Booleans mapped to integers
+        elif list(df[c].unique()) == [1, 0]:
+            df[c] = df[c].astype(bool)
+        
+        # Float64 to float32
+        elif df[c].dtype == float:
+            df[c] = df[c].astype(np.float32)
+            
+        # Int64 to int32
+        elif df[c].dtype == int:
+            df[c] = df[c].astype(np.int32)
+        
+    new_memory = df.memory_usage().sum()
+    
+    if print_info:
+        print(f'Original Memory Usage: {round(original_memory / 1e9, 2)} gb.')
+        print(f'New Memory Usage: {round(new_memory / 1e9, 2)} gb.')
+        
+    return df
+```
 
 
 

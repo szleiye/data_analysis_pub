@@ -184,6 +184,59 @@ GROUP BY prd_type_id;
 
 
 
+### 字段类型
+
+#### [类型转换相关函数](https://www.runoob.com/postgresql/postgresql-functions.html)
+
+| 函数                            | 返回类型  | 描述                                                        | 实例                                         |
+| :------------------------------ | :-------- | :---------------------------------------------------------- | :------------------------------------------- |
+| to_char(timestamp, text)        | text      | 将时间戳转换为字符串                                        | to_char(current_timestamp, 'HH12:MI:SS')     |
+| to_char(interval, text)         | text      | 将时间间隔转换为字符串                                      | to_char(interval '15h 2m 12s', 'HH24:MI:SS') |
+| to_char(int, text)              | text      | 整型转换为字符串                                            | to_char(125, '999')                          |
+| to_char(double precision, text) | text      | 双精度转换为字符串                                          | to_char(125.8::real, '999D9')                |
+| to_char(numeric, text)          | text      | 数字转换为字符串                                            | to_char(-125.8, '999D99S')                   |
+| to_date(text, text)             | date      | 字符串转换为日期                                            | to_date('05 Dec 2000', 'DD Mon YYYY')        |
+| to_number(text, text)           | numeric   | 转换字符串为数字                                            | to_number('12,454.8-', '99G999D9S')          |
+| to_timestamp(text, text)        | timestamp | 转换为指定的时间格式 time zone convert string to time stamp | to_timestamp('05 Dec 2000', 'DD Mon YYYY')   |
+| to_timestamp(double precision)  | timestamp | 把UNIX纪元转换成时间戳                                      | to_timestamp(1284352323)                     |
+
+
+
+#### 字符转数字
+
+to_number()
+
+```sql
+select sum(to_number(mj,9999.99)) as amountmj
+from table 
+group by area
+```
+
+cast()
+
+```sql
+select cast('123' as INTEGER);
+CAST('123.11' as NUMERIC)
+```
+
+
+
+### 字符串
+
+
+
+### 其他函数
+
+#### LEAST 取最小值
+
+```SQL
+SELECT LEAST(a, b)
+```
+
+
+
+
+
 ## 系统表
 
 ### information_schema

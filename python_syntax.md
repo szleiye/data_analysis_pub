@@ -328,7 +328,7 @@ for line in lines:  # 调用之前储存的文件内容
     print(line.rstrip())
 ```
 
-####  
+
 
 #### 读取整个文件 with open()
 
@@ -959,9 +959,54 @@ collections.deque(join_res, maxlen=0)  # 执行函数
 #### product
 
 ```PYTHON
- itertools import product
-   
+itertools import product
 ```
+
+
+
+#### itertools.groupby 对迭代对象分组
+
+itertools.groupby(*iterable*, *key=None*)
+
+创建一个迭代器，返回 *iterable* 中连续的键和组。
+
+key: 是一个计算元素键值函数。
+
+iterable: 迭代器，一般先根据键值函数预先排序，否则同一键值会分成多组。
+
+```PYTHON
+# Define a printer for comparing outputs
+>>> def print_groupby(iterable, key=None):
+...    for k, g in it.groupby(iterable, key):
+...        print("key: '{}'--> group: {}".format(k, list(g)))
+
+# Feature A: group consecutive occurrences
+>>> print_groupby("BCAACACAADBBB")
+key: 'B'--> group: ['B']
+key: 'C'--> group: ['C']
+key: 'A'--> group: ['A', 'A']
+key: 'C'--> group: ['C']
+key: 'A'--> group: ['A']
+key: 'C'--> group: ['C']
+key: 'A'--> group: ['A', 'A']
+key: 'D'--> group: ['D']
+key: 'B'--> group: ['B', 'B', 'B']
+
+# Feature B: group all occurrences
+>>> print_groupby(sorted("BCAACACAADBBB"))
+key: 'A'--> group: ['A', 'A', 'A', 'A', 'A']
+key: 'B'--> group: ['B', 'B', 'B', 'B']
+key: 'C'--> group: ['C', 'C', 'C']
+key: 'D'--> group: ['D']
+
+# Feature C: group by a key function
+>>> key = lambda x: x.islower()
+>>> print_groupby(sorted("bCAaCacAADBbB"), key)
+key: 'False'--> group: ['A', 'A', 'A', 'B', 'B', 'C', 'C', 'D']
+key: 'True'--> group: ['a', 'a', 'b', 'b', 'c']
+```
+
+
 
 
 
@@ -1840,18 +1885,281 @@ if x > 5:
 
  
 
+
+
+## [日志记录 Logging](https://www.cnblogs.com/yyds/p/6901864.html)
+
+### 日志级别
+
+| 日志等级（level） | 描述                                                         |
+| ----------------- | ------------------------------------------------------------ |
+| DEBUG             | 最详细的日志信息，典型应用场景是 问题诊断                    |
+| INFO              | 信息详细程度仅次于DEBUG，通常只记录关键节点信息，用于确认一切都是按照我们预期的那样进行工作 |
+| WARNING           | 当某些不期望的事情发生时记录的信息（如，磁盘可用空间较低），但是此时应用程序还是正常运行的 |
+| ERROR             | 由于一个更严重的问题导致某些功能不能正常运行时记录的信息     |
+| CRITICAL          | 当发生严重错误，导致应用程序不能继续运行时记录的信息         |
+
+
+
+### 模块级别的常用函数
+
+| 函数                                   | 说明                                 |
+| -------------------------------------- | ------------------------------------ |
+| logging.debug(msg, *args, **kwargs)    | 创建一条严重级别为DEBUG的日志记录    |
+| logging.info(msg, *args, **kwargs)     | 创建一条严重级别为INFO的日志记录     |
+| logging.warning(msg, *args, **kwargs)  | 创建一条严重级别为WARNING的日志记录  |
+| logging.error(msg, *args, **kwargs)    | 创建一条严重级别为ERROR的日志记录    |
+| logging.critical(msg, *args, **kwargs) | 创建一条严重级别为CRITICAL的日志记录 |
+| logging.log(level, *args, **kwargs)    | 创建一条严重级别为level的日志记录    |
+| logging.basicConfig(**kwargs)          | 对root logger进行一次性配置          |
+
+其中`logging.basicConfig(**kwargs)`函数用于指定“要记录的日志级别”、“日志格式”、“日志输出位置”、“日志文件的打开模式”等信息，其他几个都是用于记录各个级别日志的函数。
+
+
+
+#### 简单日志输出 logging
+
+logging模块中定义好的可以用于format格式字符串中字段
+
+| 字段/属性名称   | 使用格式            | 描述                                                         |
+| --------------- | ------------------- | ------------------------------------------------------------ |
+| asctime         | %(asctime)s         | 日志事件发生的时间--人类可读时间，如：2003-07-08 16:49:45,896 |
+| created         | %(created)f         | 日志事件发生的时间--时间戳，就是当时调用time.time()函数返回的值 |
+| relativeCreated | %(relativeCreated)d | 日志事件发生的时间相对于logging模块加载时间的相对毫秒数（目前还不知道干嘛用的） |
+| msecs           | %(msecs)d           | 日志事件发生事件的毫秒部分                                   |
+| levelname       | %(levelname)s       | 该日志记录的文字形式的日志级别（'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'） |
+| levelno         | %(levelno)s         | 该日志记录的数字形式的日志级别（10, 20, 30, 40, 50）         |
+| name            | %(name)s            | 所使用的日志器名称，默认是'root'，因为默认使用的是 rootLogger |
+| message         | %(message)s         | 日志记录的文本内容，通过 `msg % args`计算得到的              |
+| pathname        | %(pathname)s        | 调用日志记录函数的源码文件的全路径                           |
+| filename        | %(filename)s        | pathname的文件名部分，包含文件后缀                           |
+| module          | %(module)s          | filename的名称部分，不包含后缀                               |
+| lineno          | %(lineno)d          | 调用日志记录函数的源代码所在的行号                           |
+| funcName        | %(funcName)s        | 调用日志记录函数的函数名                                     |
+| process         | %(process)d         | 进程ID                                                       |
+| processName     | %(processName)s     | 进程名称，Python 3.1新增                                     |
+| thread          | %(thread)d          | 线程ID                                                       |
+| threadName      | %(thread)s          | 线程名称                                                     |
+
+```PYTHON
+# 1
+logging.basicConfig(level=logging.DEBUG)  # 定义日志输出级别
+
+logging.debug("This is a debug log.")
+logging.info("This is a info log.")
+logging.warning("This is a warning log.")
+logging.error("This is a error log.")
+logging.critical("This is a critical log.")
+
+
+
+# 2
+LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+DATE_FORMAT = "%m/%d/%Y %H:%M:%S %p"
+
+logging.basicConfig(filename='my.log', level=logging.DEBUG, format=LOG_FORMAT, datefmt=DATE_FORMAT)
+
+logging.debug("This is a debug log.")
+logging.info("This is a info log.")
+logging.warning("This is a warning log.")
+logging.error("This is a error log.")
+logging.critical("This is a critical log.")
+```
+
+
+
+####  日志基本配置 logging.basicConfig()
+
+- `logging.basicConfig()`函数是一个一次性的简单配置工具使，也就是说只有在第一次调用该函数时会起作用，后续再次调用该函数时完全不会产生任何操作的，多次调用的设置并不是累加操作。
+- 日志器（Logger）是有层级关系的，上面调用的logging模块级别的函数所使用的日志器是`RootLogger`类的实例，其名称为'root'，它是处于日志器层级关系最顶层的日志器，且该实例是以单例模式存在的。
+
+函数可接收的关键字参数
+
+| 参数名称 | 描述                                                         |
+| -------- | ------------------------------------------------------------ |
+| filename | 指定日志输出目标文件的文件名，指定该设置项后日志信心就不会被输出到控制台了 |
+| filemode | 指定日志文件的打开模式，默认为'a'。需要注意的是，该选项要在filename指定时才有效 |
+| format   | 指定日志格式字符串，即指定日志输出时所包含的字段信息以及它们的顺序。logging模块定义的格式字段下面会列出。 |
+| datefmt  | 指定日期/时间格式。需要注意的是，该选项要在format中包含时间字段%(asctime)s时才有效 |
+| level    | 指定日志器的日志级别                                         |
+| stream   | 指定日志输出目标stream，如sys.stdout、sys.stderr以及网络stream。需要说明的是，stream和filename不能同时提供，否则会引发 `ValueError`异常 |
+| style    | Python 3.2中新添加的配置项。指定format格式字符串的风格，可取值为'%'、'{'和'$'，默认为'%' |
+| handlers | Python 3.3中新添加的配置项。该选项如果被指定，它应该是一个创建了多个Handler的可迭代对象，这些handler将会被添加到root logger。需要说明的是：filename、stream和handlers这三个配置项只能有一个存在，不能同时出现2个或3个，否则会引发ValueError异常。 |
+
+
+
+```PYTHON
+logging.basicConfig(**kwargs)
+```
+
+
+
+
+
+### 四大组件
+
+> logging模块提供的模块级别的那些函数实际上也是通过这几个组件的相关实现类来记录日志的，只是在创建这些类的实例时设置了一些默认值。
+
+| 组件       | 说明                                                         |
+| ---------- | ------------------------------------------------------------ |
+| loggers    | 提供应用程序代码直接使用的接口                               |
+| handlers   | 用于将日志记录发送到指定的目的位置                           |
+| filters    | 提供更细粒度的日志过滤功能，用于决定哪些日志记录将会被输出（其它的日志记录将会被忽略） |
+| formatters | 用于控制日志信息的最终输出格式                               |
+
+#### Logger类
+
+Logger对象有3个任务要做：
+
+- 1）向应用程序代码暴露几个方法，使应用程序可以在运行时记录日志消息；
+- 2）基于日志严重等级（默认的过滤设施）或filter对象来决定要对哪些日志进行后续处理；
+- 3）将日志消息传送给所有感兴趣的日志handlers。
+
+Logger对象最常用的方法分为两类：配置方法 和 消息发送方法
+
+最常用的配置方法如下：
+
+| 方法                                          | 描述                                       |
+| --------------------------------------------- | ------------------------------------------ |
+| Logger.setLevel()                             | 设置日志器将会处理的日志消息的最低严重级别 |
+| Logger.addHandler() 和 Logger.removeHandler() | 为该logger对象添加 和 移除一个handler对象  |
+| Logger.addFilter() 和 Logger.removeFilter()   | 为该logger对象添加 和 移除一个filter对象   |
+
+logger对象配置完成后，可以使用下面的方法来创建日志记录：
+
+| 方法                                                         | 描述                                              |
+| ------------------------------------------------------------ | ------------------------------------------------- |
+| Logger.debug(), Logger.info(), Logger.warning(), Logger.error(), Logger.critical() | 创建一个与它们的方法名对应等级的日志记录          |
+| Logger.exception()                                           | 创建一个类似于Logger.error()的日志消息            |
+| Logger.log()                                                 | 需要获取一个明确的日志level参数来创建一个日志记录 |
+
+
+
+#### Handler类
+
+Handler对象的作用是（基于日志消息的level）将消息分发到handler指定的位置（文件、网络、邮件等）。Logger对象可以通过addHandler()方法为自己添加0个或者更多个handler对象。比如，一个应用程序可能想要实现以下几个日志需求：
+
+- 1）把所有日志都发送到一个日志文件中；
+- 2）把所有严重级别大于等于error的日志发送到stdout（标准输出）；
+- 3）把所有严重级别为critical的日志发送到一个email邮件地址。
+    这种场景就需要3个不同的handlers，每个handler复杂发送一个特定严重级别的日志到一个特定的位置。
+
+一个handler中只有非常少数的方法是需要应用开发人员去关心的。对于使用内建handler对象的应用开发人员来说，似乎唯一相关的handler方法就是下面这几个配置方法：
+
+| 方法                                          | 描述                                        |
+| --------------------------------------------- | ------------------------------------------- |
+| Handler.setLevel()                            | 设置handler将会处理的日志消息的最低严重级别 |
+| Handler.setFormatter()                        | 为handler设置一个格式器对象                 |
+| Handler.addFilter() 和 Handler.removeFilter() | 为handler添加 和 删除一个过滤器对象         |
+
+需要说明的是，应用程序代码不应该直接实例化和使用Handler实例。因为Handler是一个基类，它只定义了素有handlers都应该有的接口，同时提供了一些子类可以直接使用或覆盖的默认行为。下面是一些常用的Handler：
+
+| Handler                                   | 描述                                                         |
+| ----------------------------------------- | ------------------------------------------------------------ |
+| logging.StreamHandler                     | 将日志消息发送到输出到Stream，如std.out, std.err或任何file-like对象。 |
+| logging.FileHandler                       | 将日志消息发送到磁盘文件，默认情况下文件大小会无限增长       |
+| logging.handlers.RotatingFileHandler      | 将日志消息发送到磁盘文件，并支持日志文件按大小切割           |
+| logging.hanlders.TimedRotatingFileHandler | 将日志消息发送到磁盘文件，并支持日志文件按时间切割           |
+| logging.handlers.HTTPHandler              | 将日志消息以GET或POST的方式发送给一个HTTP服务器              |
+| logging.handlers.SMTPHandler              | 将日志消息发送给一个指定的email地址                          |
+| logging.NullHandler                       | 该Handler实例会忽略error messages，通常被想使用logging的library开发者使用来避免'No handlers could be found for logger XXX'信息的出现。 |
+
+
+
+#### Formater类
+
+Formater对象用于配置日志信息的最终顺序、结构和内容。与logging.Handler基类不同的是，应用代码可以直接实例化Formatter类。另外，如果你的应用程序需要一些特殊的处理行为，也可以实现一个Formatter的子类来完成。
+
+Formatter类的构造方法定义如下：
+
+```
+logging.Formatter.__init__(fmt=None, datefmt=None, style='%')
+```
+
+> 可见，该构造方法接收3个可选参数：
+>
+> - fmt：指定消息格式化字符串，如果不指定该参数则默认使用message的原始值
+> - datefmt：指定日期格式字符串，如果不指定该参数则默认使用"%Y-%m-%d %H:%M:%S"
+> - style：Python 3.2新增的参数，可取值为 '%', '{'和 '$'，如果不指定该参数则默认使用'%'
+
+
+
+
+
+##### Filter类
+
+Filter可以被Handler和Logger用来做比level更细粒度的、更复杂的过滤功能。Filter是一个过滤器基类，它只允许某个logger层级下的日志事件通过过滤。该类定义如下：
+
+```
+class logging.Filter(name='')
+    filter(record)
+```
+
+比如，一个filter实例化时传递的name参数值为'A.B'，那么该filter实例将只允许名称为类似如下规则的loggers产生的日志记录通过过滤：'A.B'，'A.B,C'，'A.B.C.D'，'A.B.D'，而名称为'A.BB', 'B.A.B'的loggers产生的日志则会被过滤掉。如果name的值为空字符串，则允许所有的日志事件通过过滤。
+
+filter方法用于具体控制传递的record记录是否能通过过滤，如果该方法返回值为0表示不能通过过滤，返回值为非0表示可以通过过滤。
+
+
+
+
+
+```PYTHON
+import logging
+import logging.handlers
+import datetime
+
+logger = logging.getLogger('mylogger')
+logger.setLevel(logging.DEBUG)
+
+rf_handler = logging.handlers.TimedRotatingFileHandler('all.log', when='midnight', interval=1, backupCount=7, atTime=datetime.time(0, 0, 0, 0))
+rf_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+
+f_handler = logging.FileHandler('error.log')
+f_handler.setLevel(logging.ERROR)
+f_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"))
+
+logger.addHandler(rf_handler)
+logger.addHandler(f_handler)
+
+logger.debug('debug message')
+logger.info('info message')
+logger.warning('warning message')
+logger.error('error message')
+logger.critical('critical message')
+```
+
+
+
+all.log文件输出
+
+```
+2017-05-13 16:12:40,612 - DEBUG - debug message
+2017-05-13 16:12:40,612 - INFO - info message
+2017-05-13 16:12:40,612 - WARNING - warning message
+2017-05-13 16:12:40,612 - ERROR - error message
+2017-05-13 16:12:40,613 - CRITICAL - critical message
+```
+
+error.log文件输出
+
+```
+2017-05-13 16:12:40,612 - ERROR - log.py[:81] - error message
+2017-05-13 16:12:40,613 - CRITICAL - log.py[:82] - critical message
+```
+
 # Pandas
 
 #### [pd.set_option()数据展示](https://pandas.pydata.org/pandas-docs/stable/user_guide/options.html)
 
 ```PTYHON
 # 显示所有列
-pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', 500)
 # 显示所有行
-pd.set_option('display.max_rows', None)
+pd.set_option('display.max_rows', 500)
 # 展示200
 pd.set_option('display.width', 200)
-
+# 展示200
+pd.set_option('display.max_colwidth', 4000)
 #
 pd.options.display.max_columns = None
 # 
@@ -3517,6 +3825,68 @@ data['food'].map(lambda x: meat_to_animal[x.lower()])
 
 
 
+#### string handling
+
+| 方法                                                         | 备注                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`Series.str.capitalize`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.capitalize.html#pandas.Series.str.capitalize)(self) | Convert strings in the Series/Index to be capitalized.       |
+| [`Series.str.casefold`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.casefold.html#pandas.Series.str.casefold)(self) | Convert strings in the Series/Index to be casefolded.        |
+| [`Series.str.cat`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.cat.html#pandas.Series.str.cat)(self[, others, sep, na_rep, join]) | Concatenate strings in the Series/Index with given separator. |
+| [`Series.str.center`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.center.html#pandas.Series.str.center)(self, width[, fillchar]) | Filling left and right side of strings in the Series/Index with an additional character. |
+| [`Series.str.contains`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.contains.html#pandas.Series.str.contains)(self, pat[, case, …]) | Test if pattern or regex is contained within a string of a Series or Index. |
+| [`Series.str.count`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.count.html#pandas.Series.str.count)(self, pat[, flags]) | Count occurrences of pattern in each string of the Series/Index. |
+| [`Series.str.decode`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.decode.html#pandas.Series.str.decode)(self, encoding[, errors]) | Decode character string in the Series/Index using indicated encoding. |
+| [`Series.str.encode`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.encode.html#pandas.Series.str.encode)(self, encoding[, errors]) | Encode character string in the Series/Index using indicated encoding. |
+| [`Series.str.endswith`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.endswith.html#pandas.Series.str.endswith)(self, pat[, na]) | Test if the end of each string element matches a pattern.    |
+| [`Series.str.extract`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.extract.html#pandas.Series.str.extract)(self, pat[, flags, expand]) | Extract capture groups in the regex pat as columns in a DataFrame. |
+| [`Series.str.extractall`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.extractall.html#pandas.Series.str.extractall)(self, pat[, flags]) | For each subject string in the Series, extract groups from all matches of regular expression pat. |
+| [`Series.str.find`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.find.html#pandas.Series.str.find)(self, sub[, start, end]) | Return lowest indexes in each strings in the Series/Index where the substring is fully contained between [start:end]. |
+| [`Series.str.findall`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.findall.html#pandas.Series.str.findall)(self, pat[, flags]) | Find all occurrences of pattern or regular expression in the Series/Index. |
+| [`Series.str.get`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.get.html#pandas.Series.str.get)(self, i) | Extract element from each component at specified position.   |
+| [`Series.str.index`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.index.html#pandas.Series.str.index)(self, sub[, start, end]) | Return lowest indexes in each strings where the substring is fully contained between [start:end]. |
+| [`Series.str.join`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.join.html#pandas.Series.str.join)(self, sep) | Join lists contained as elements in the Series/Index with passed delimiter. |
+| [`Series.str.len`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.len.html#pandas.Series.str.len)(self) | Compute the length of each element in the Series/Index.      |
+| [`Series.str.ljust`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.ljust.html#pandas.Series.str.ljust)(self, width[, fillchar]) | Filling right side of strings in the Series/Index with an additional character. |
+| [`Series.str.lower`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.lower.html#pandas.Series.str.lower)(self) | Convert strings in the Series/Index to lowercase.            |
+| [`Series.str.lstrip`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.lstrip.html#pandas.Series.str.lstrip)(self[, to_strip]) | Remove leading and trailing characters.                      |
+| [`Series.str.match`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.match.html#pandas.Series.str.match)(self, pat[, case, flags, na]) | Determine if each string matches a regular expression.       |
+| [`Series.str.normalize`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.normalize.html#pandas.Series.str.normalize)(self, form) | Return the Unicode normal form for the strings in the Series/Index. |
+| [`Series.str.pad`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.pad.html#pandas.Series.str.pad)(self, width[, side, fillchar]) | Pad strings in the Series/Index up to width.                 |
+| [`Series.str.partition`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.partition.html#pandas.Series.str.partition)(self[, sep, expand]) | Split the string at the first occurrence of sep.             |
+| [`Series.str.repeat`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.repeat.html#pandas.Series.str.repeat)(self, repeats) | Duplicate each string in the Series or Index.                |
+| [`Series.str.replace`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.replace.html#pandas.Series.str.replace)(self, pat, repl[, n, …]) | Replace occurrences of pattern/regex in the Series/Index with some other string. |
+| [`Series.str.rfind`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rfind.html#pandas.Series.str.rfind)(self, sub[, start, end]) | Return highest indexes in each strings in the Series/Index where the substring is fully contained between [start:end]. |
+| [`Series.str.rindex`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rindex.html#pandas.Series.str.rindex)(self, sub[, start, end]) | Return highest indexes in each strings where the substring is fully contained between [start:end]. |
+| [`Series.str.rjust`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rjust.html#pandas.Series.str.rjust)(self, width[, fillchar]) | Filling left side of strings in the Series/Index with an additional character. |
+| [`Series.str.rpartition`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rpartition.html#pandas.Series.str.rpartition)(self[, sep, expand]) | Split the string at the last occurrence of sep.              |
+| [`Series.str.rstrip`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rstrip.html#pandas.Series.str.rstrip)(self[, to_strip]) | Remove leading and trailing characters.                      |
+| [`Series.str.slice`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.slice.html#pandas.Series.str.slice)(self[, start, stop, step]) | Slice substrings from each element in the Series or Index.   |
+| [`Series.str.slice_replace`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.slice_replace.html#pandas.Series.str.slice_replace)(self[, start, …]) | Replace a positional slice of a string with another value.   |
+| [`Series.str.split`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.split.html#pandas.Series.str.split)(self[, pat, n, expand]) | Split strings around given separator/delimiter.              |
+| [`Series.str.rsplit`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.rsplit.html#pandas.Series.str.rsplit)(self[, pat, n, expand]) | Split strings around given separator/delimiter.              |
+| [`Series.str.startswith`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.startswith.html#pandas.Series.str.startswith)(self, pat[, na]) | Test if the start of each string element matches a pattern.  |
+| [`Series.str.strip`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.strip.html#pandas.Series.str.strip)(self[, to_strip]) | Remove leading and trailing characters.                      |
+| [`Series.str.swapcase`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.swapcase.html#pandas.Series.str.swapcase)(self) | Convert strings in the Series/Index to be swapcased.         |
+| [`Series.str.title`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.title.html#pandas.Series.str.title)(self) | Convert strings in the Series/Index to titlecase.            |
+| [`Series.str.translate`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.translate.html#pandas.Series.str.translate)(self, table) | Map all characters in the string through the given mapping table. |
+| [`Series.str.upper`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.upper.html#pandas.Series.str.upper)(self) | Convert strings in the Series/Index to uppercase.            |
+| [`Series.str.wrap`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.wrap.html#pandas.Series.str.wrap)(self, width, \*\*kwargs) | Wrap long strings in the Series/Index to be formatted in paragraphs with length less than a given width. |
+| [`Series.str.zfill`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.zfill.html#pandas.Series.str.zfill)(self, width) | Pad strings in the Series/Index by prepending ‘0’ characters. |
+| [`Series.str.isalnum`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isalnum.html#pandas.Series.str.isalnum)(self) | Check whether all characters in each string are alphanumeric. |
+| [`Series.str.isalpha`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isalpha.html#pandas.Series.str.isalpha)(self) | Check whether all characters in each string are alphabetic.  |
+| [`Series.str.isdigit`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isdigit.html#pandas.Series.str.isdigit)(self) | Check whether all characters in each string are digits.      |
+| [`Series.str.isspace`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isspace.html#pandas.Series.str.isspace)(self) | Check whether all characters in each string are whitespace.  |
+| [`Series.str.islower`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.islower.html#pandas.Series.str.islower)(self) | Check whether all characters in each string are lowercase.   |
+| [`Series.str.isupper`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isupper.html#pandas.Series.str.isupper)(self) | Check whether all characters in each string are uppercase.   |
+| [`Series.str.istitle`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.istitle.html#pandas.Series.str.istitle)(self) | Check whether all characters in each string are titlecase.   |
+| [`Series.str.isnumeric`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isnumeric.html#pandas.Series.str.isnumeric)(self) | Check whether all characters in each string are numeric.     |
+| [`Series.str.isdecimal`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.isdecimal.html#pandas.Series.str.isdecimal)(self) | Check whether all characters in each string are decimal.     |
+| [`Series.str.get_dummies`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.str.get_dummies.html#pandas.Series.str.get_dummies)(self[, sep]) | Split each string in the Series by sep and return a DataFrame of dummy/indicator variables. |
+
+ 
+
+
+
 ## 日期计算
 
 Python标准库主要会用到以下模块：
@@ -3647,6 +4017,59 @@ index = pd.date_range('4/1/2012', '6/1/2012')
 ```PYTHON
 index = pd.date_range('4/1/2012', '6/1/2012', freq='M')
 ```
+
+
+
+### datetime 属性
+
+| datetime properties                                          | 说明                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`Series.dt.date`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.date.html#pandas.Series.dt.date) | Returns numpy array of python datetime.date objects (namely, the date part of Timestamps without timezone information). |
+| [`Series.dt.time`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.time.html#pandas.Series.dt.time) | Returns numpy array of datetime.time.                        |
+| [`Series.dt.timetz`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.timetz.html#pandas.Series.dt.timetz) | Returns numpy array of datetime.time also containing timezone information. |
+| [`Series.dt.year`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.year.html#pandas.Series.dt.year) | The year of the datetime.                                    |
+| [`Series.dt.month`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.month.html#pandas.Series.dt.month) | The month as January=1, December=12.                         |
+| [`Series.dt.day`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.day.html#pandas.Series.dt.day) | The month as January=1, December=12.                         |
+| [`Series.dt.hour`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.hour.html#pandas.Series.dt.hour) | The hours of the datetime.                                   |
+| [`Series.dt.minute`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.minute.html#pandas.Series.dt.minute) | The minutes of the datetime.                                 |
+| [`Series.dt.second`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.second.html#pandas.Series.dt.second) | The seconds of the datetime.                                 |
+| [`Series.dt.microsecond`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.microsecond.html#pandas.Series.dt.microsecond) | The microseconds of the datetime.                            |
+| [`Series.dt.nanosecond`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.nanosecond.html#pandas.Series.dt.nanosecond) | The nanoseconds of the datetime.                             |
+| [`Series.dt.week`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.week.html#pandas.Series.dt.week) | The week ordinal of the year.                                |
+| [`Series.dt.weekofyear`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.weekofyear.html#pandas.Series.dt.weekofyear) | The week ordinal of the year.                                |
+| [`Series.dt.dayofweek`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.dayofweek.html#pandas.Series.dt.dayofweek) | The day of the week with Monday=0, Sunday=6.                 |
+| [`Series.dt.weekday`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.weekday.html#pandas.Series.dt.weekday) | The day of the week with Monday=0, Sunday=6.                 |
+| [`Series.dt.dayofyear`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.dayofyear.html#pandas.Series.dt.dayofyear) | The ordinal day of the year.                                 |
+| [`Series.dt.quarter`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.quarter.html#pandas.Series.dt.quarter) | The quarter of the date.                                     |
+| [`Series.dt.is_month_start`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_month_start.html#pandas.Series.dt.is_month_start) | Indicates whether the date is the first day of the month.    |
+| [`Series.dt.is_month_end`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_month_end.html#pandas.Series.dt.is_month_end) | Indicates whether the date is the last day of the month.     |
+| [`Series.dt.is_quarter_start`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_quarter_start.html#pandas.Series.dt.is_quarter_start) | Indicator for whether the date is the first day of a quarter. |
+| [`Series.dt.is_quarter_end`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_quarter_end.html#pandas.Series.dt.is_quarter_end) | Indicator for whether the date is the last day of a quarter. |
+| [`Series.dt.is_year_start`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_year_start.html#pandas.Series.dt.is_year_start) | Indicate whether the date is the first day of a year.        |
+| [`Series.dt.is_year_end`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_year_end.html#pandas.Series.dt.is_year_end) | Indicate whether the date is the last day of the year.       |
+| [`Series.dt.is_leap_year`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.is_leap_year.html#pandas.Series.dt.is_leap_year) | Boolean indicator if the date belongs to a leap year.        |
+| [`Series.dt.daysinmonth`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.daysinmonth.html#pandas.Series.dt.daysinmonth) | The number of days in the month.                             |
+| [`Series.dt.days_in_month`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.days_in_month.html#pandas.Series.dt.days_in_month) | The number of days in the month.                             |
+| [`Series.dt.tz`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz.html#pandas.Series.dt.tz) | Return timezone, if any.                                     |
+| [`Series.dt.freq`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.freq.html#pandas.Series.dt.freq) |                                                              |
+
+
+
+datetime 方法
+
+| datetime method                                              | 备注                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`Series.dt.to_period`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.to_period.html#pandas.Series.dt.to_period)(self, \*args, \*\*kwargs) | Cast to PeriodArray/Index at a particular frequency.         |
+| [`Series.dt.to_pydatetime`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.to_pydatetime.html#pandas.Series.dt.to_pydatetime)(self) | Return the data as an array of native Python datetime objects. |
+| [`Series.dt.tz_localize`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz_localize.html#pandas.Series.dt.tz_localize)(self, \*args, \*\*kwargs) | Localize tz-naive Datetime Array/Index to tz-aware Datetime Array/Index. |
+| [`Series.dt.tz_convert`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.tz_convert.html#pandas.Series.dt.tz_convert)(self, \*args, \*\*kwargs) | Convert tz-aware Datetime Array/Index from one time zone to another. |
+| [`Series.dt.normalize`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.normalize.html#pandas.Series.dt.normalize)(self, \*args, \*\*kwargs) | Convert times to midnight.                                   |
+| [`Series.dt.strftime`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.strftime.html#pandas.Series.dt.strftime)(self, \*args, \*\*kwargs) | Convert to Index using specified date_format.                |
+| [`Series.dt.round`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.round.html#pandas.Series.dt.round)(self, \*args, \*\*kwargs) | Perform round operation on the data to the specified freq.   |
+| [`Series.dt.floor`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.floor.html#pandas.Series.dt.floor)(self, \*args, \*\*kwargs) | Perform floor operation on the data to the specified freq.   |
+| [`Series.dt.ceil`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.ceil.html#pandas.Series.dt.ceil)(self, \*args, \*\*kwargs) | Perform ceil operation on the data to the specified freq.    |
+| [`Series.dt.month_name`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.month_name.html#pandas.Series.dt.month_name)(self, \*args, \*\*kwargs) | Return the month names of the DateTimeIndex with specified locale. |
+| [`Series.dt.day_name`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Series.dt.day_name.html#pandas.Series.dt.day_name)(self, \*args, \*\*kwargs) | Return the day names of the DateTimeIndex with specified locale. |
 
 
 
@@ -3927,7 +4350,7 @@ array([[ 1,  2,  3],
 upper = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
 ```
 
-### 读写文件
+### 读写文件 npy/npz 格式
 
 | 方法                                                         | 说明                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -4142,239 +4565,7 @@ Out[114]: (1,2)
 
 # matplotlib画图
 
-## 基础设置
-
-#### matplotlib 配置 plt.rc()
-
-```PYTHON
-# 例子1
-plt.rc('figure', figsize=(10, 10))
-
-# 例子2
-font_options = {'family':'monospace',
-                'weight':'bold',
-                'size':'small'}  # 将选项写成字典
-plt.rc('font', **font_options)  # 然后将字典传入
-```
-
-#### 画图默认配置的基础代码
-
-```PYTHON
-# 导入 matplotlib 的所有内容（nympy 可以用 np 这个名字来使用）
-from pylab import *
-
-# 创建一个 8 * 6 点（point）的图，并设置分辨率为 80
-figure(figsize=(8,6), dpi=80)
-
-# 创建一个新的 1 * 1 的子图，接下来的图样绘制在其中的第 1 块（也是唯一的一块）
-subplot(1,1,1)
-
-X = np.linspace(-np.pi, np.pi, 256,endpoint=True)
-C,S = np.cos(X), np.sin(X)
-
-# 绘制余弦曲线，使用蓝色的、连续的、宽度为 1 （像素）的线条
-plot(X, C, color="blue", linewidth=1.0, linestyle="-")
-
-# 绘制正弦曲线，使用绿色的、连续的、宽度为 1 （像素）的线条
-plot(X, S, color="green", linewidth=1.0, linestyle="-")
-
-# 设置横轴的上下限
-xlim(-4.0,4.0)
-
-# 设置横轴记号
-xticks(np.linspace(-4,4,9,endpoint=True))
-
-# 设置纵轴的上下限
-ylim(-1.0,1.0)
-
-# 设置纵轴记号
-yticks(np.linspace(-1,1,5,endpoint=True))
-
-# 以分辨率 72 来保存图片
-# savefig("exercice_2.png",dpi=72)
-
-# 在屏幕上显示
-show()
-```
-
-#### 调整subplot周围的间距 plt.subplots_adjust()
-
-```python
-fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
-for i in range(2):
-    for j in range(2):
-        axes[i, j].hist(randn(500), bins=50, color='k', alpha=0.5)
-plt.subplots_adjust(wspace=0, hspace=0)
-```
-
-#### 设置标题 ax.set_title()
-
-```python
-ax.set_title('aaa')
-```
-
-### 坐标轴调整 
-
-#### 设置刻度、标签和图例
-
-大部分的图标装饰项可以通过以下两种方式实现：
-
-* 过程型的pyplot接口 (如plt.xxx，只对最近的fig起作用)
-* [面向对象的原生matplotlib API (推荐，可以指定对哪个fig使用)](https://matplotlib.org/api/axes_api.html) 
-
-#### [调整x轴坐标标签](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_xticklabels.html#matplotlib.axes.Axes.set_xticklabels)
-
-```python
-# 设置x轴标签大小
-plt.tick_params(axis='x', labelsize=8)    
-
-# 旋转x轴坐标
-plt.xticks(rotation=-15)    
-
-# 旋转x轴坐标
-ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, fontdict={'horizontalalignment': 'right'})
-```
-
-#### 双坐标轴 ax.twinx()
-
-```PYTHON
-ax2 = ax1.twinx()
-```
-
-#### [三坐标轴](https://matplotlib.org/gallery/ticks_and_spines/multiple_yaxis_with_spines.html#sphx-glr-gallery-ticks-and-spines-multiple-yaxis-with-spines-py )
-
-```PYTHON
-par1 = host.twinx()
-par2 = host.twinx()
-
-# Offset the right spine of par2.  The ticks and label have already been
-# placed on the right by twinx above.
-par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
-```
-
-#### 设置坐标轴位置 ax.spines.set_position()
-
-Spine position is specified by a 2 tuple of (position type, amount). The position types are:
-
-- 'outward' : place the spine out from the data area by the specified number of points. (Negative values specify placing the spine inward.)
-- 'axes' : place the spine at the specified Axes coordinate (from 0.0-1.0).
-- 'data' : place the spine at the specified data coordinate. 移动到指定的坐标位置
-
-Additionally, shorthand notations define a special positions:
-
-- 'center' -> ('axes',0.5)
-- 'zero' -> ('data', 0.0)
-
-```PYTHON
-par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
-```
-
-
-
-#### 设置坐标轴范围 ax.set_xlim()
-
-```PYTHON
-# 通过pyplot接口
-plt.xlim()  # 没有给参数，则返回当前图像的坐标轴范围
-plt.xlim([0,10])  # 传入参数则设置坐标轴范围，仅对最近的AxesSubplot起作用
-
-# 通过subplot实例方法
-ax.get_xlim()
-ax.set_xlim()
-
-# 合理设置坐标轴范围
-xmin ,xmax = X.min(), X.max()
-ymin, ymax = Y.min(), Y.max()
-
-dx = (xmax - xmin) * 0.2
-dy = (ymax - ymin) * 0.2
-
-xlim(xmin - dx, xmax + dx)
-ylim(ymin - dy, ymax + dy)
-```
-
-#### [设置坐标轴范围 ax.set_ylim()](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_ylim.html#matplotlib.axes.Axes.set_ylim )
-
- Axes.set_ylim(*self*, *bottom=None*, *top=None*, *emit=True*, *auto=False*, ***, *ymin=None*, *ymax=None*) 
-
-
-
-#### 设置刻度标签 ax.set_xticks() / ax.set_xticklabels()
-
-```python
-ax.set_xticks([0, 250, 500, 750, 1000])  # set_xticks设置要修改坐标标签的位置
-ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation=30, fontsize='small')  # 根据上一行的位置设置对应的标签
-
-# pyplot 方法 设置标签位置和相应的符号
-xticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi],
-       [r'$-\pi$', r'$-\pi/2$', r'$0$', r'$+\pi/2$', r'$+\pi$'])
-
-yticks([-1, 0, +1],
-       [r'$-1$', r'$0$', r'$+1$'])
-```
-
-#### 设置x轴名称 ax.set_xlabel()
-
-```PYTHON
-ax.set_xlabel('Stages')
-```
-
-#### 调整为四象限坐标轴形式
-
-```PYTHON
-ax = gca()
-ax.spines['right'].set_color('none')
-ax.spines['top'].set_color('none')
-ax.xaxis.set_ticks_position('bottom')
-ax.spines['bottom'].set_position(('data',0))
-ax.yaxis.set_ticks_position('left')
-ax.spines['left'].set_position(('data',0))
-```
-
-#### 设置坐标轴标签
-
-| 类型                | 说明                                       |
-| :---------------- | :--------------------------------------- |
-| `NullLocator`     | No ticks. ![img](assets/1540012569-1664-ticks-NullLocator.png) |
-| `IndexLocator`    | Place a tick on every multiple of some base number of points plotted. ![img](assets/1540012569-4591-ticks-IndexLocator.png) |
-| `FixedLocator`    | Tick locations are fixed. ![img](assets/1540012569-6368-ticks-FixedLocator.png) |
-| `LinearLocator`   | Determine the tick locations. ![img](assets/1540012570-7138-ticks-LinearLocator.png) |
-| `MultipleLocator` | Set a tick on every integer that is multiple of some base. ![img](assets/1540012570-8671-ticks-MultipleLocator.png) |
-| `AutoLocator`     | Select no more than n intervals at nice locations. ![img](assets/1540012570-3960-ticks-AutoLocator.png) |
-| `LogLocator`      | Determine the tick locations for log axes. ![img](assets/1540012571-8369-ticks-LogLocator.png) |
-
-```PYTHON
-
-# Setup a plot such that only the bottom spine is shown
-def setup(ax):
-    ax.spines['right'].set_color('none')
-    ax.spines['left'].set_color('none')
-    ax.yaxis.set_major_locator(ticker.NullLocator())
-    ax.spines['top'].set_color('none')
-    ax.xaxis.set_ticks_position('bottom')
-    ax.tick_params(which='major', width=1.00)
-    ax.tick_params(which='major', length=5)
-    ax.tick_params(which='minor', width=0.75)
-    ax.tick_params(which='minor', length=2.5)
-    ax.set_xlim(0, 5)
-    ax.set_ylim(0, 1)
-    ax.patch.set_alpha(0.0)
-
-
-plt.figure(figsize=(8, 6))
-n = 8
-
-# Null Locator
-ax = plt.subplot(n, 1, 1)
-setup(ax)
-ax.xaxis.set_major_locator(ticker.NullLocator())
-ax.xaxis.set_minor_locator(ticker.NullLocator())
-ax.text(0.0, 0.1, "NullLocator()", fontsize=14, transform=ax.transAxes)
-```
-
-
-
-### 多图相关
+## 多图相关
 
 #### [设定图纸1 plt.subplots()](https://matplotlib.org/api/_as_gen/matplotlib.pyplot.subplots.html#matplotlib.pyplot.subplots)
 
@@ -4465,7 +4656,227 @@ plt.tight_layout()
 
 
 
-### 图例
+#### [调整subplot周围的间距 plt.subplots_adjust()](https://matplotlib.org/3.2.1/api/_as_gen/matplotlib.pyplot.subplots_adjust.html)
+
+matplotlib.pyplot.subplots_adjust(*left=None*, *bottom=None*, *right=None*, *top=None*, *wspace=None*, *hspace=None*)
+
+> * left = 0.125  # the left side of the subplots of the figure
+> * right = 0.9   # the right side of the subplots of the figure
+> * bottom = 0.1  # the bottom of the subplots of the figure
+> * top = 0.9     # the top of the subplots of the figure
+> * wspace = 0.2  # the amount of width reserved for space between subplots,
+> * expressed as a fraction of the average axis width
+> * hspace = 0.2  # the amount of height reserved for space between subplots,
+> * expressed as a fraction of the average axis height
+
+```python
+fig, axes = plt.subplots(2, 2, sharex=True, sharey=True)
+for i in range(2):
+    for j in range(2):
+        axes[i, j].hist(randn(500), bins=50, color='k', alpha=0.5)
+plt.subplots_adjust(wspace=0, hspace=0)
+```
+
+
+
+## 基础设置
+
+#### matplotlib 配置 plt.rc()
+
+```PYTHON
+# 例子1
+plt.rc('figure', figsize=(10, 10))
+
+# 例子2
+font_options = {'family':'monospace',
+                'weight':'bold',
+                'size':'small'}  # 将选项写成字典
+plt.rc('font', **font_options)  # 然后将字典传入
+```
+
+#### 设置标题 ax.set_title()
+
+```python
+ax.set_title('aaa')
+```
+
+
+
+### 坐标轴调整 
+
+#### 设置刻度、标签和图例
+
+大部分的图标装饰项可以通过以下两种方式实现：
+
+* 过程型的pyplot接口 (如plt.xxx，只对最近的fig起作用)
+* [面向对象的原生matplotlib API (推荐，可以指定对哪个fig使用)](https://matplotlib.org/api/axes_api.html) 
+
+
+
+#### 双坐标轴 ax.twinx()
+
+```PYTHON
+ax2 = ax1.twinx()
+```
+
+
+
+#### [三坐标轴](https://matplotlib.org/gallery/ticks_and_spines/multiple_yaxis_with_spines.html#sphx-glr-gallery-ticks-and-spines-multiple-yaxis-with-spines-py )
+
+```PYTHON
+par1 = host.twinx()
+par2 = host.twinx()
+
+# Offset the right spine of par2.  The ticks and label have already been
+# placed on the right by twinx above.
+par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
+```
+
+
+
+#### 设置坐标轴位置 ax.spines.set_position()
+
+Spine position is specified by a 2 tuple of (position type, amount). The position types are:
+
+- 'outward' : place the spine out from the data area by the specified number of points. (Negative values specify placing the spine inward.)
+- 'axes' : place the spine at the specified Axes coordinate (from 0.0-1.0).
+- 'data' : place the spine at the specified data coordinate. 移动到指定的坐标位置
+
+Additionally, shorthand notations define a special positions:
+
+- 'center' -> ('axes',0.5)
+- 'zero' -> ('data', 0.0)
+
+```PYTHON
+par2.spines["right"].set_position(("axes", 1.2))  # 设置右边的轴到
+```
+
+
+
+#### [设置坐标轴范围 ax.set_ylim()](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_ylim.html#matplotlib.axes.Axes.set_ylim)
+
+ Axes.set_ylim(*self*, *bottom=None*, *top=None*, *emit=True*, *auto=False*, ***, *ymin=None*, *ymax=None*) 
+
+```PYTHON
+# 通过pyplot接口
+plt.xlim()  # 没有给参数，则返回当前图像的坐标轴范围
+plt.xlim([0,10])  # 传入参数则设置坐标轴范围，仅对最近的AxesSubplot起作用
+
+# 通过subplot实例方法
+ax.get_xlim()
+ax.set_xlim()
+
+# 合理设置坐标轴范围
+xmin ,xmax = X.min(), X.max()
+ymin, ymax = Y.min(), Y.max()
+
+dx = (xmax - xmin) * 0.2
+dy = (ymax - ymin) * 0.2
+
+xlim(xmin - dx, xmax + dx)
+ylim(ymin - dy, ymax + dy)
+```
+
+
+
+#### [旋转x轴坐标标签](https://matplotlib.org/api/_as_gen/matplotlib.axes.Axes.set_xticklabels.html#matplotlib.axes.Axes.set_xticklabels)
+
+```python
+# 设置x轴标签大小
+plt.tick_params(axis='x', labelsize=8)    
+
+# 旋转x轴坐标
+plt.xticks(rotation=-15)    
+
+# 旋转x轴坐标
+ax1.set_xticklabels(ax1.get_xticklabels(), rotation=45, fontdict={'horizontalalignment': 'right'})
+```
+
+
+
+#### 设置刻度标签 ax.set_xticks() / ax.set_xticklabels()
+
+```python
+ax.set_xticks([0, 250, 500, 750, 1000])  # set_xticks设置要修改坐标标签的位置
+ax.set_xticklabels(['one', 'two', 'three', 'four', 'five'], rotation=30, fontsize='small')  # 根据上一行的位置设置对应的标签
+
+# pyplot 方法 设置标签位置和相应的符号
+xticks([-np.pi, -np.pi/2, 0, np.pi/2, np.pi],
+       [r'$-\pi$', r'$-\pi/2$', r'$0$', r'$+\pi/2$', r'$+\pi$'])
+
+yticks([-1, 0, +1],
+       [r'$-1$', r'$0$', r'$+1$'])
+```
+
+
+
+#### 设置坐标轴标签
+
+| 类型              | 说明                                                         |
+| :---------------- | :----------------------------------------------------------- |
+| `NullLocator`     | No ticks. ![img](assets/1540012569-1664-ticks-NullLocator.png) |
+| `IndexLocator`    | Place a tick on every multiple of some base number of points plotted. ![img](assets/1540012569-4591-ticks-IndexLocator.png) |
+| `FixedLocator`    | Tick locations are fixed. ![img](assets/1540012569-6368-ticks-FixedLocator.png) |
+| `LinearLocator`   | Determine the tick locations. ![img](assets/1540012570-7138-ticks-LinearLocator.png) |
+| `MultipleLocator` | Set a tick on every integer that is multiple of some base. ![img](assets/1540012570-8671-ticks-MultipleLocator.png) |
+| `AutoLocator`     | Select no more than n intervals at nice locations. ![img](assets/1540012570-3960-ticks-AutoLocator.png) |
+| `LogLocator`      | Determine the tick locations for log axes. ![img](assets/1540012571-8369-ticks-LogLocator.png) |
+
+```PYTHON
+# Setup a plot such that only the bottom spine is shown
+def setup(ax):
+    ax.spines['right'].set_color('none')
+    ax.spines['left'].set_color('none')
+    ax.yaxis.set_major_locator(ticker.NullLocator())
+    ax.spines['top'].set_color('none')
+    ax.xaxis.set_ticks_position('bottom')
+    ax.tick_params(which='major', width=1.00)
+    ax.tick_params(which='major', length=5)
+    ax.tick_params(which='minor', width=0.75)
+    ax.tick_params(which='minor', length=2.5)
+    ax.set_xlim(0, 5)
+    ax.set_ylim(0, 1)
+    ax.patch.set_alpha(0.0)
+
+
+plt.figure(figsize=(8, 6))
+n = 8
+
+# Null Locator
+ax = plt.subplot(n, 1, 1)
+setup(ax)
+ax.xaxis.set_major_locator(ticker.NullLocator())
+ax.xaxis.set_minor_locator(ticker.NullLocator())
+ax.text(0.0, 0.1, "NullLocator()", fontsize=14, transform=ax.transAxes)
+```
+
+
+
+#### 设置x轴名称 ax.set_xlabel()
+
+```PYTHON
+ax.set_xlabel('Stages')
+```
+
+
+
+#### 调整为四象限坐标轴形式
+
+```PYTHON
+ax = gca()
+ax.spines['right'].set_color('none')
+ax.spines['top'].set_color('none')
+ax.xaxis.set_ticks_position('bottom')
+ax.spines['bottom'].set_position(('data',0))
+ax.yaxis.set_ticks_position('left')
+ax.spines['left'].set_position(('data',0))
+```
+
+
+
+
+
+## 图例
 
 #### [添加图例 ax.legend()]( https://www.cnblogs.com/MTandHJ/p/10850415.html )
 
