@@ -125,11 +125,53 @@ GROUPING SETS (
 select AGE('2018-08-31', '2018-10-15')  # 返回间隔X年X月X日，配合extract
 ```
 
-#### EXTRACT()/DATEPART()
+
+
+#### EXTRACT()
+
+| `DAY`                | 返回日期值       |
+| -------------------- | ---------------- |
+| `MONTH`              | 返回月份值       |
+| `YEAR`               | 返回年份值       |
+| `DOY`（day of year） | 返回年中的第几天 |
+| `DOW`（day of week） | 返回星期几       |
+| `QUARTER`            | 返回季度         |
 
 ```PYTHON
-
+EXTRACT(type FROM d)
 ```
+
+
+
+#### DATEPART()
+
+DATEPART(datepart,date)
+
+| datepart | 缩写     |
+| :------- | :------- |
+| 年       | yy, yyyy |
+| 季度     | qq, q    |
+| 月       | mm, m    |
+| 年中的日 | dy, y    |
+| 日       | dd, d    |
+| 周       | wk, ww   |
+| 星期     | dw, w    |
+| 小时     | hh       |
+| 分钟     | mi, n    |
+| 秒       | ss, s    |
+| 毫秒     | ms       |
+| 微妙     | mcs      |
+| 纳秒     | ns       |
+
+```SQL
+SELECT DATEPART(yyyy,OrderDate) AS OrderYear,
+DATEPART(mm,OrderDate) AS OrderMonth,
+DATEPART(dd,OrderDate) AS OrderDay,
+FROM Orders
+WHERE OrderId=1
+```
+
+
 
 
 

@@ -398,6 +398,30 @@ with open('eggs.csv', 'w', newline='') as csvfile:
 
 ## python 内置函数
 
+#### all()
+
+all() 函数用于判断给定的可迭代参数 iterable 中的所有元素是否都为 TRUE，如果是返回 True，否则返回 False。元素除了是 0、空、None、False 外都算 True。
+
+```python
+def is_prime_generator(n):        
+    '''
+    判断n是否是质数
+    '''
+    return all((n % i != 0 for i in range(2, n)))
+```
+
+
+
+#### any() 
+
+any() 函数用于判断给定的可迭代参数 iterable 是否全部为 False，则返回 False，如果有一个为 True，则返回 True。元素除了是 0、空、FALSE 外都算 TRUE。
+
+```PYTHON
+any(iterable)
+```
+
+
+
 #### 对可迭代对象进行排序 sorted() 
 
 `iterable`: 可迭代对象。
@@ -933,6 +957,53 @@ print(azip.namelist())
 <img src="assets/python_syntax/640.png" alt="img" style="zoom:50%;" />
 
 ### 迭代器 iterator
+
+#### 创建迭代器对象 **iter()** 
+
+```PYTHON
+list=[1,2,3,4]
+it = iter(list)    # 创建迭代器对象
+print (next(it)) 
+```
+
+
+
+
+
+#### [生成器 generator](https://www.runoob.com/python3/python3-iterator-generator.html)
+
+ Python 中，使用了 yield 的函数被称为生成器（generator）。
+
+* 生成器是一个返回迭代器的函数
+* 每次遇到 yield 时函数会暂停并保存当前所有的运行信息，返回 yield 的值, 并在下一次执行 next() 方法时从当前位置继续运行。
+
+```PYTHON
+#!/usr/bin/python3
+ 
+import sys
+ 
+def fibonacci(n): # 生成器函数 - 斐波那契
+    a, b, counter = 0, 1, 0
+    while True:
+        if (counter > n): 
+            return
+        yield a  # 暂停保存当前运行信息，下一次调用next时从当前位置继续
+        a, b = b, a + b
+        counter += 1
+f = fibonacci(10) # f 是一个迭代器，由生成器返回生成
+ 
+while True:
+    try:
+        print (next(f), end=" ")
+    except StopIteration:
+        sys.exit()
+```
+
+
+
+
+
+
 
 #### 用迭代器循环执行函数 starmap
 
