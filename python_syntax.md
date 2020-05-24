@@ -4752,6 +4752,8 @@ plt.subplots_adjust(wspace=0, hspace=0)
 
 ## 基础设置
 
+
+
 #### matplotlib 配置 plt.rc()
 
 ```PYTHON
@@ -4765,11 +4767,109 @@ font_options = {'family':'monospace',
 plt.rc('font', **font_options)  # 然后将字典传入
 ```
 
+
+
 #### 设置标题 ax.set_title()
 
 ```python
 ax.set_title('aaa')
 ```
+
+
+
+#### 开局设置全局变量
+
+```PYTHON
+import numpy as np
+import pandas as pd
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings; warnings.filterwarnings(action='once')
+
+large = 22; med = 16; small = 12
+params = {'axes.titlesize': large,
+          'legend.fontsize': med,
+          'figure.figsize': (16, 10),
+          'axes.labelsize': med,
+          'axes.titlesize': med,
+          'xtick.labelsize': med,
+          'ytick.labelsize': med,
+          'figure.titlesize': large}
+plt.rcParams.update(params)
+plt.style.use('seaborn-whitegrid')
+sns.set_style("white")
+%matplotlib inline
+```
+
+
+
+#### 设置四周框线
+
+```PYTHON
+ax[1].spines['top'].set_visible(False)
+ax[1].spines['right'].set_visible(False)
+```
+
+
+
+#### 设置显示层级
+
+```PYTHON
+plt.scatter(x,y,zorder=1)
+plt.plot([-50,100],[-50,100],lw=50,zorder=0,color='grey')
+```
+
+
+
+#### 画辅助线
+
+```PYTHON
+plt.axhline(-50,linestyle='--',color='orange',lw=3)
+plt.axvline(0,linestyle='--',color='orange',lw=3)
+```
+
+
+
+#### 加长方形patch
+
+```PYTHON
+plt.gca().add_patch(Rectangle((-50,-50),50,220,alpha=.1,color='black',linestyle='--',lw=5))
+from matplotlib.patches import Rectangle
+```
+
+
+
+#### 设置自定义边界填充
+
+```PYTHON
+plt.scatter(x,y)
+plt.axhspan(0,50,alpha=.4)
+plt.axvspan(0,50,alpha=.)
+```
+
+
+
+#### 插入注解
+
+```PYTHON
+x = np.linspace(0.5,3.5,100)
+y = np.sin(x)
+
+fig = plt.figure(figsize=(8,8))
+ax = fig.add_subplot(111)
+
+ax.plot(x,y,c='b',ls='--',lw=2)
+
+ax.annotate("maximum",xy=(np.pi/2,1.0),xycoords='data'
+            ,xytext=((np.pi/2)+0.15,0.8),textcoords='data',weight='bold',color='r',arrowprops=dict(arrowstyle='->',
+                                                                                                  connectionstyle='arc3'))
+ax.text(2.8,0.4,"$y=\sin(x)$",fontsize=20,color='b',bbox=dict(facecolor='y',alpha=0.5))
+```
+
+<img src="assets/python_syntax/v2-7c9d2c991c990eff6dddc8dd3c86b578_1440w.jpg" alt="img" style="zoom: 33%;" />
+
+
 
 
 
@@ -4846,6 +4946,13 @@ dy = (ymax - ymin) * 0.2
 
 xlim(xmin - dx, xmax + dx)
 ylim(ymin - dy, ymax + dy)
+
+# plt 和 ax 的区别
+plt.xlabel --> ax.set_xlabel()
+plt.ylabel --> ax.set_ylabel()
+plt.xlim() --> ax.setxlim()
+plt.ylim() --> ax.setylim()
+plt.title() --> ax.set_title()
 ```
 
 
@@ -4941,6 +5048,50 @@ ax.xaxis.set_ticks_position('bottom')
 ax.spines['bottom'].set_position(('data',0))
 ax.yaxis.set_ticks_position('left')
 ax.spines['left'].set_position(('data',0))
+```
+
+
+
+#### 对于每个刻度的处理
+
+```PYTHON
+fig = plt.figure(facecolor=(1.0,1.0,0.9412))
+ax = fig.add_axes([0.1,0.4,0.5,0.5])
+
+plt.plot(x,y)
+for ticklabel in ax.xaxis.get_ticklabels():
+    ticklabel.set_color('slateblue')
+    ticklabel.set_fontsize(18)
+    ticklabel.set_rotation(30)
+    
+for tickline in ax.yaxis.get_ticklines():
+    tickline.set_color('lightgreen')
+    tickline.set_markersize(20)
+    tickline.set_markeredgewidth(2)
+    tickline.set_animated(True)
+```
+
+
+
+#### 调整坐标刻度的显示格式
+
+```PYTHON
+from calendar import month_name,day_name
+from matplotlib.ticker import FormatStrFormatter
+
+fig = plt.figure()
+ax = fig.add_axes([0.2,0.2,0.7,0.7])
+x = np.arange(1,8,1)
+y = 2*x
+
+ax.plot(x,y,ls='-',lw=2,color='orange',marker='o',ms=20,mfc='c',mec='c')
+
+ax.yaxis.set_major_formatter(FormatStrFormatter(r'$\yen%1.1f$'))
+
+plt.xticks(x,day_name[0:7],rotation=20)
+
+ax.set_xlim(0,8)
+ax.set_ylim(0,18)
 ```
 
 
