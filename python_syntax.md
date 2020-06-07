@@ -3334,21 +3334,21 @@ df[(df.a < df.b) & (df.b < df.c)]  # 传统方法
 * 任何将Series降维到scalar的函数都可以看作agg函数，比如` df.groupby('A').agg(lambda ser: 1) `
 * `agg`和`apply`的区别在于，`agg`是传入一列数据返回一个标量，而`apply`是将一组数据全部传入，可以返回多维结果
 
-| Function     | Description                              |
-| :----------- | :--------------------------------------- |
-| `mean()`     | Compute mean of groups                   |
-| `sum()`      | Compute sum of group values              |
-| `size()`     | Compute group sizes                      |
-| `count()`    | Compute count of group                   |
-| `std()`      | Standard deviation of groups             |
-| `var()`      | Compute variance of groups               |
-| `sem()`      | Standard error of the mean of groups     |
-| `describe()` | Generates descriptive statistics         |
-| `first()`    | Compute first of group values            |
-| `last()`     | Compute last of group values             |
+| qFunction    | Description                                |
+| :----------- | :----------------------------------------- |
+| `mean()`     | Compute mean of groups                     |
+| `sum()`      | Compute sum of group values                |
+| `size()`     | Compute group sizes                        |
+| `count()`    | Compute count of group                     |
+| `std()`      | Standard deviation of groups               |
+| `var()`      | Compute variance of groups                 |
+| `sem()`      | Standard error of the mean of groups       |
+| `describe()` | Generates descriptive statistics           |
+| `first()`    | Compute first of group values              |
+| `last()`     | Compute last of group values               |
 | `nth()`      | Take nth value, or a subset if n is a list |
-| `min()`      | Compute min of group values              |
-| `max()`      | Compute max of group values              |
+| `min()`      | Compute min of group values                |
+| `max()`      | Compute max of group values                |
 
 #### 调用自己得聚合函数 DataFrame.GroupBy.agg  
 
