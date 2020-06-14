@@ -2237,6 +2237,8 @@ pd.options.display.max_columns = None
 pd.reset_option("display.max_rows")
 ```
 
+
+
 ## 读取数据
 
 #### pd.read_csv() 读取csv文件
@@ -2253,9 +2255,13 @@ ratings_1 = pd.read_csv("../data/AI派_数据分析项目/ml-latest-small/rating
 ex1data2=pd.read_csv(".\data\ex1data2.txt", header=None, names=['Size', 'Bedrooms', 'Price'])
 ```
 
+
+
 #### 从mysql中读取数据
 
 [Pandas从MySQL中读取和保存数据](https://cloud.tencent.com/developer/news/255810)
+
+
 
 #### pd.read_sql() 读取mysql数据
 
@@ -2276,6 +2282,8 @@ data = pd.read_sql("select distinct app_num,dd_date "
 
 ```
 
+
+
 #### pd.to_sql() 写入到mysql数据
 
 ```PYTHON
@@ -2286,6 +2294,8 @@ connection = create_engine('mysql+mysqlconnector://root:123456@127.0.0.1:3306/te
 
 data.to_sql("data",con=connection,if_exists='append')
 ```
+
+
 
 #### 创建一个Dataframe
 
@@ -2298,6 +2308,56 @@ test_dict = {'id':[1,2,3,4,5,6],
 
 test=pd.DataFrame(test_dict)
 ```
+
+
+
+#### [解析json字符串](https://blog.csdn.net/h4565445654/article/details/76400879)
+
+1. 利用pandas自带的read_json直接解析字符串，效率高，对格式要求高
+2. 利用json的loads和pandas的json_normalize进行解析，灵活性高，效率最低低
+3. 利用json的loads和pandas的DataFrame直接构造(这个过程需要手动修改loads得到的字典格式)，灵活性最高
+
+```PYTHON
+# -*- coding: UTF-8 -*-
+from pandas.io.json import json_normalize
+import pandas as pd
+import json
+import time
+ 
+# 读入数据
+data_str = open('data.json').read()
+print data_str
+ 
+# 测试json_normalize
+start_time = time.time()
+for i in range(0, 300):
+    data_list = json.loads(data_str)
+    df = json_normalize(data_list)
+end_time = time.time()
+print end_time - start_time
+ 
+# 测试自己构造
+start_time = time.time()
+for i in range(0, 300):
+    data_list = json.loads(data_str)
+    data = [[d['timestamp'], d['value']] for d in data_list]
+    df = pd.DataFrame(data, columns=['timestamp', 'value'])
+end_time = time.time()
+print end_time - start_time
+ 
+#  测试read_json
+start_time = time.time()
+for i in range(0, 300):
+    df = pd.read_json(data_str, orient='records')
+end_time = time.time()
+print end_time - start_time
+
+
+```
+
+
+
+
 
 ### HDFStore
 
