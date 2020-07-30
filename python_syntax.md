@@ -379,13 +379,18 @@ data.close()
 
 #### [csv.writer()](https://docs.python.org/zh-cn/3.9/library/csv.html )
 
- csv.writer(*csvfile*, *dialect='excel'*, ***fmtparams*) 
+* newline=’’： 设置不产生空行
 
 ```PYTHON
 import csv
-with open('eggs.csv', 'w', newline='') as csvfile:
+
+# 1. 创建文件对象
+with open('eggs.csv', 'w', newline='') as csvfile:  
+    # 2. 设置csv writer 写入对象
     spamwriter = csv.writer(csvfile, delimiter=' ',
                             quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    
+    # 3. 开始写入内容
     spamwriter.writerow(['Spam'] * 5 + ['Baked Beans'])
     spamwriter.writerow(['Spam', 'Lovely Spam', 'Wonderful Spam'])
 ```
@@ -3138,6 +3143,37 @@ temp['b'] = temp.a.apply(lambda x:x.left)
 
 
 
+#### 实现数据移动lag   [df.shift](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.shift.html)
+
+| 参数           | 类型                                                     | 备注                                                         |
+| -------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
+| **periods**    | int                                                      | Number of periods to shift. Can be positive or negative.     |
+| **freq**       | DateOffset, tseries.offsets, timedelta, or str, optional | 如果索引是日期的话，指定freq之后索引日期会跟着变             |
+| **axis**       | {0 or ‘index’, 1 or ‘columns’, None}, default None       | Shift direction.                                             |
+| **fill_value** | object, optional                                         | The scalar value to use for newly introduced missing values. the default depends on the dtype of self. For numeric data, `np.nan` is used. For datetime, timedelta, or period data, etc. `NaT` is used. For extension dtypes, `self.dtype.na_value` is used. |
+
+```python
+df = pd.DataFrame({"Col1": [10, 20, 15, 30, 45],
+                   "Col2": [13, 23, 18, 33, 48],
+                   "Col3": [17, 27, 22, 37, 52]},
+                  index=pd.date_range("2020-01-01", "2020-01-05"))
+
+
+df.shift(periods=3)
+
+df.shift(periods=1, axis="columns")
+
+df.shift(periods=3, fill_value=0)
+
+df.shift(periods=3, freq="D")
+
+df.shift(periods=3, freq="infer")
+```
+
+
+
+
+
 ## 数据操作-切片
 
 ### [Indexing and Selecting Data](https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#indexing-query>)
@@ -4086,6 +4122,9 @@ df['diff_time'] = round(df['diff_time'])
 #方法二，日期相减变为小时；变为天的话将h替换为D即可：
 df['diff_time'] = (df['tm_1'] - df['tm_2']).values/np.timedelta64(1, 'h')
 
+# 方法三
+date1 = datetime.datetime(2017, 12, 13)
+date1 - df['time_list']
 ```
 
 
@@ -4147,6 +4186,31 @@ index = pd.date_range('4/1/2012', '6/1/2012')
 
 ```PYTHON
 index = pd.date_range('4/1/2012', '6/1/2012', freq='M')
+```
+
+
+
+#### 计算n天后的日期 timedelta
+
+`timedelta`
+
+* days
+* seconds
+* microseconds
+* milliseconds
+* minutes
+* hours
+*  weeks
+
+```Python
+# 按天
+df['time_list'] + timedelta(days=1)
+
+# 小时
+df['time_list'] + timedelta(hours=5)
+
+# 周
+df['time_list'] + timedelta(weeks=5)
 ```
 
 
