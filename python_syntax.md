@@ -350,9 +350,11 @@ with open('pi_digits.txt') as file_object:
 
 `r`: 只读模型，默认
 
-`r+`: 可以读取和写入
+`r+`: 可以读取和写入，如果文件不存在则报错
 
 `w`: 写入模式，只能写入字符串
+
+`w+`: 可以读取和写入，如果文件不存在则创建
 
 `a`: 附加模式
 
@@ -371,6 +373,37 @@ with open(filename, 'w') as file_object:
 data=open("D:\data.txt",'w+') 
 print('这是个测试',file=data)
 data.close()
+```
+
+
+
+#### 批量替换路径下所有文件指定字符串
+
+```PYTHON
+import os
+
+
+def listFiles(dirPath):
+    fileList = []
+    for root, dirs, files in os.walk(dirPath):  # 返回一个三元组，遍历的路径、当前遍历路径下的目录、当前遍历目录下的文件名
+        for fileObj in files:
+            if fileObj.endswith('.py'):
+                fileList.append(os.path.join(root, fileObj))
+    return fileList
+
+
+def replace_str(old_str, new_str, dirpath):  
+    fileList = listFiles(dirpath)
+    for fileObj in fileList:
+        f = open(fileObj, 'r+')  
+        all_the_lines = f.readlines()  # 每次按每行读取整个文件内容，将读取到的内容放到一个列表中，返回list
+        f.seek(0)
+        f.truncate()
+        for line in all_the_lines:
+            f.write(line.replace(old_str, new_str))
+        f.close()
+
+
 ```
 
 
@@ -774,7 +807,16 @@ if __name__ = "__main__":
 
 
 
+#### 运行shell命令  os.system()
 
+
+```
+ # 同时执行多个py文件并且指定输出到文件
+ import os
+ os.system("python ./1.py 1>>log.txt")
+ os.system("python ./2.py 1>>log.txt")
+ os.system("python ./4.py 1>>log.txt")
+```
 
 ## Python 字符串
 
