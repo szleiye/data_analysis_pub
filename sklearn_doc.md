@@ -29,6 +29,130 @@ output.close()
 
 ## 数据处理
 
+#### [不同列用不同预处理方法 ColumnTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html#sklearn.compose.ColumnTransformer)
+
+```PYTHON
+# http://scikit-learn.org/stable/auto_examples/compose/plot_column_transformer_mixed_types.html
+    
+# Author: Pedro Morales <part.morales@gmail.com>
+#
+# License: BSD 3 clause
+
+from __future__ import print_function
+
+import pandas as pd
+import numpy as np
+
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+np.random.seed(0)
+
+# Read data from Titanic dataset.
+titanic_url = ('https://raw.githubusercontent.com/amueller/'
+               'scipy-2017-sklearn/091d371/notebooks/datasets/titanic3.csv')
+data = pd.read_csv(titanic_url)
+
+# We will train our classifier with the following features:
+# Numeric Features:
+# - age: float.
+# - fare: float.
+# Categorical Features:
+# - embarked: categories encoded as strings {'C', 'S', 'Q'}.
+# - sex: categories encoded as strings {'female', 'male'}.
+# - pclass: ordinal integers {1, 2, 3}.
+
+# We create the preprocessing pipelines for both numeric and categorical data.
+numeric_features = ['age', 'fare']
+numeric_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())])
+
+categorical_features = ['embarked', 'sex', 'pclass']
+categorical_transformer = Pipeline(steps=[
+    ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
+    ('onehot', OneHotEncoder(handle_unknown='ignore'))])
+
+preprocessor = ColumnTransformer(
+    transformers=[
+        ('num', numeric_transformer, numeric_features),
+        ('cat', categorical_transformer, categorical_features)])
+
+# Append classifier to preprocessing pipeline.
+# Now we have a full prediction pipeline.
+clf = Pipeline(steps=[('preprocessor', preprocessor),
+                      ('classifier', LogisticRegression(solver='lbfgs'))])
+
+X = data.drop('survived', axis=1)
+y = data['survived']
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+clf.fit(X_train, y_train)
+print("model score: %.3f" % clf.score(X_test, y_test))
+
+# output:
+# model score: 0.790
+```
+
+#### columntransformer 还原变量列名
+
+```PYTHON
+def get_feature_out(estimator, feature_in):
+    if hasattr(estimator,'get_feature_names'):
+        if isinstance(estimator, _VectorizerMixin):
+            # handling all vectorizers
+            return [f'vec_{f}' \
+                for f in estimator.get_feature_names()]
+        else:
+            return estimator.get_feature_names(feature_in)
+    elif isinstance(estimator, SelectorMixin):
+        return np.array(feature_in)[estimator.get_support()]
+    else:
+        return feature_in
+
+
+def get_ct_feature_names(ct):
+    # handles all estimators, pipelines inside ColumnTransfomer
+    # doesn't work when remainder =='passthrough'
+    # which requires the input column names.
+    output_features = []
+
+    for name, estimator, features in ct.transformers_:
+        if name!='remainder':
+            if isinstance(estimator, Pipeline):
+                current_features = features
+                for step in estimator:
+                    current_features = get_feature_out(step, current_features)
+                features_out = current_features
+            else:
+                features_out = get_feature_out(estimator, features)
+            output_features.extend(features_out)
+        elif estimator=='passthrough':
+            output_features.extend(ct._feature_names_in[features])
+                
+    return output_features
+
+pd.DataFrame(transformed_data, 
+             columns=get_ct_feature_names(combined_pipe))
+```
+
+
+
+ #### 取columntransformer 中 ordinal encoder 的属性
+
+```PYTHON
+preprocessor.transformers_[0][1].named_steps['ordinal'].categories_
+```
+
+
+
+
+
 #### [对齐数据框 pandas.DataFrame.align](https://pandas.pydata.org/pandas-docs/version/0.22/generated/pandas.DataFrame.align.html)
 
 
@@ -1088,4 +1212,52 @@ for i, res in enumerate(optimizer.res):
 >>> Iteration 4:
 >>>     {'target': -4.441293113411222, 'params': {'y': -0.005822117636089974, 'x': 2.104665051994087}}
 ```
+
+
+
+## Pipeline
+
+#### pipeline 中使用自定义函数
+
+```PYTHON
+class ColumnExtractor(object):
+
+    def transform(self, X):
+        cols = X[:,2:4] # column 3 and 4 are "extracted"
+        return cols
+
+    def fit(self, X, y=None):
+        return self
+    
+clf = Pipeline(steps=[
+    ('scaler', StandardScaler()),
+    ('reduce_dim', ColumnExtractor()),           
+    ('classification', GaussianNB())   
+    ])
+
+# 一般性写法
+import numpy as np
+
+class ColumnExtractor(object):
+
+    def __init__(self, cols):
+        self.cols = cols
+
+    def transform(self, X):
+        col_list = []
+        for c in self.cols:
+            col_list.append(X[:, c:c+1])
+        return np.concatenate(col_list, axis=1)
+
+    def fit(self, X, y=None):
+        return self
+
+    clf = Pipeline(steps=[
+    ('scaler', StandardScaler()),
+    ('dim_red', ColumnExtractor(cols=(1,3))),   # selects the second and 4th column      
+    ('classification', GaussianNB())   
+    ])
+```
+
+
 

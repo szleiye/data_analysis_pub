@@ -277,6 +277,26 @@ SELECT LEAST(a, b)
 
 
 
+#### [unpivot形式的转置  unnest()](https://stackoverflow.com/questions/1128737/unpivot-and-postgresql)
+
+```sql
+# `array[a, b, c]` returns an array object, with the values of a, b, and c as it's elements. `unnest(array[a, b, c])` breaks the results into one row for each of the array's elements.
+
+SELECT id,
+       unnest(array['a', 'b', 'c']) AS colname,
+       unnest(array[a, b, c]) AS thing
+FROM foo
+ORDER BY id;
+```
+
+
+
+[unpivot形式的转置  join lateral](https://stackoverflow.com/questions/1128737/unpivot-and-postgresql)
+
+![image-20201011122229606](assets/pgsql_syntax/image-20201011122229606.png)
+
+
+
 
 
 ## 系统表
