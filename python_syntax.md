@@ -660,6 +660,81 @@ random_params
  'ni']
 ```
 
+#### exec()
+
+exec函数的返回值永远为None.
+
+```python
+>>>exec 'print "Hello World"'
+Hello World
+# 单行语句字符串
+>>> exec "print 'runoob.com'"
+runoob.com
+ 
+#  多行语句字符串
+>>> exec """for i in range(5):
+...   print "iter time: %d" % i
+... """
+iter time: 0
+iter time: 1
+iter time: 2
+iter time: 3
+iter time: 4
+```
+
+#### eval()
+
+`eval(expression, globals=None, locals=None)`
+
+计算指定表达式的值。也就是说它要执行的Python代码只能是单个运算表达式（注意eval不支持任意形式的赋值操作），而不能是复杂的代码逻辑，这一点和lambda表达式比较相似。
+
+> 参数说明：
+>
+> - expression：必选参数，可以是字符串，也可以是一个任意的code对象实例（可以通过compile函数创建）。如果它是一个字符串，它会被当作一个（使用globals和locals参数作为全局和本地命名空间的）Python表达式进行分析和解释。
+> - globals：可选参数，表示全局命名空间（存放全局变量），如果被提供，则必须是一个字典对象。
+> - locals：可选参数，表示当前局部命名空间（存放局部变量），如果被提供，可以是任何映射对象。如果该参数被忽略，那么它将会取与globals相同的值。
+> - 如果globals与locals都被忽略，那么它们将取eval()函数被调用环境下的全局命名空间和局部命名空间。
+>
+> 返回值：
+>
+> - 如果expression是一个code对象，且创建该code对象时，compile函数的mode参数是'exec'，那么eval()函数的返回值是None；
+> - 否则，如果expression是一个输出语句，如print()，则eval()返回结果为None；
+> - 否则，expression表达式的结果就是eval()函数的返回值；
+
+
+
+```
+x = 10
+
+def func():
+    y = 20
+    a = eval('x + y')
+    print('a: ', a)
+    b = eval('x + y', {'x': 1, 'y': 2})
+    print('b: ', b)
+    c = eval('x + y', {'x': 1, 'y': 2}, {'y': 3, 'z': 4})
+    print('c: ', c)
+    d = eval('print(x, y)')
+    print('d: ', d)
+
+func()
+```
+
+```
+>>> a:  30
+>>> b:  3
+>>> c:  4
+>>> 10 20
+>>> d:  None
+```
+
+> ***对输出结果的解释：***
+>
+> - 对于变量a，eval函数的globals和locals参数都被忽略了，因此变量x和变量y都取得的是eval函数被调用环境下的作用域中的变量值，即：x = 10, y = 20，a = x + y = 30
+> - 对于变量b，eval函数只提供了globals参数而忽略了locals参数，因此locals会取globals参数的值，即：x = 1, y = 2，b = x + y = 3
+> - 对于变量c，eval函数的globals参数和locals都被提供了，那么eval函数会先从全部作用域globals中找到变量x, 从局部作用域locals中找到变量y，即：x = 1, y = 3, c = x + y = 4
+> - 对于变量d，因为print()函数不是一个计算表达式，没有计算结果，因此返回值为None
+
 
 
 ## if 语句
