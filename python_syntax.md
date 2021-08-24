@@ -2,11 +2,30 @@
 
 
 
+# 一、python
+
 ## python有用的包
 
 pandas-profiling: 一键生成EDA报告
 
 
+
+## jupyter 设置
+
+#### 输出显示每行变量
+
+```PYTHON
+from IPython.core.interactiveshell import InteractiveShell
+InteractiveShell.ast_node_interactivity = "all" 
+```
+
+
+
+```python
+# 恢复默认
+from IPython.core.interactiveshell import InteractiveShell
+InteractiveShell.ast_node_interactivity = "none" 
+```
 
 
 
@@ -2340,7 +2359,7 @@ error.log文件输出
 2017-05-13 16:12:40,613 - CRITICAL - log.py[:82] - critical message
 ```
 
-# Pandas
+# 二、Pandas
 
 #### [pd.set_option()数据展示](https://pandas.pydata.org/pandas-docs/stable/user_guide/options.html)
 
@@ -4758,7 +4777,7 @@ more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more
 | delete   from lax_freq where type = ‘MISC’ | lax_freq   = lax_freq[lax_freq.type != ‘MISC’] |
 |                                          | lax_freq.drop(lax_freq[lax_freq.type   == ‘MISC’].index) |
 
-# Numpy
+# 三、Numpy
 
 #### 创建**ndarray**
 
