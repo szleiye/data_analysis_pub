@@ -2376,6 +2376,10 @@ pd.set_option('display.max_colwidth', 4000)
 pd.options.display.max_columns = None
 # 
 pd.reset_option("display.max_rows")
+
+# 保留小数点
+pd.set_option('precision',4)
+pd.options.display.float_format = '{:,.2f}'.format
 ```
 
 
