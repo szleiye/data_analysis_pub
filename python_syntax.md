@@ -3034,6 +3034,128 @@ Int64Index([2, 1], dtype='int64')
 
 ### 多重索引
 
+#### 设置索引显示方式 `multi_sparse`
+
+“Sparsify” MultiIndex display (don’t display repeated elements in outer levels within groups)
+
+```python
+pd.options.display.multi_sparse = False
+pd.get_option("display.multi_sparse")
+```
+
+
+
+#### 多重索引切片 .loc
+
+```PYTHON
+df = df.T
+
+df
+Out[40]: 
+                     A         B         C
+first second                              
+bar   one     0.895717  0.410835 -1.413681
+      two     0.805244  0.813850  1.607920
+baz   one    -1.206412  0.132003  1.024180
+      two     2.565646 -0.827317  0.569605
+foo   one     1.431256 -0.076467  0.875906
+      two     1.340309 -1.187678 -2.211372
+qux   one    -1.170299  1.130127  0.974466
+      two    -0.226169 -1.436737 -2.006747
+
+df.loc[("bar", "two")]
+Out[41]: 
+A    0.805244
+B    0.813850
+C    1.607920
+Name: (bar, two), dtype: float64
+        
+       
+# 切片
+df.loc[("bar", "two"), "A"]
+Out[42]: 0.8052440253863785
+    
+# 切片
+df.loc["baz":"foo"]
+Out[44]: 
+                     A         B         C
+first second                              
+baz   one    -1.206412  0.132003  1.024180
+      two     2.565646 -0.827317  0.569605
+foo   one     1.431256 -0.076467  0.875906
+      two     1.340309 -1.187678 -2.211372
+    
+
+# 切片    
+df.loc[("baz", "two"):("qux", "one")]
+Out[45]: 
+                     A         B         C
+first second                              
+baz   two     2.565646 -0.827317  0.569605
+foo   one     1.431256 -0.076467  0.875906
+      two     1.340309 -1.187678 -2.211372
+qux   one    -1.170299  1.130127  0.974466
+
+df.loc[("baz", "two"):"foo"]
+Out[46]: 
+                     A         B         C
+first second                              
+baz   two     2.565646 -0.827317  0.569605
+foo   one     1.431256 -0.076467  0.875906
+      two     1.340309 -1.187678 -2.211372
+    
+    
+# 注意多重索引下 tuple和list的区别
+# Whereas a tuple is interpreted as one multi-level key, a list is used to specify several keys.
+s = pd.Series(
+    [1, 2, 3, 4, 5, 6],
+    index=pd.MultiIndex.from_product([["A", "B"], ["c", "d", "e"]]),
+)
+
+
+s.loc[[("A", "c"), ("B", "d")]]  # list of tuples，list是
+Out[49]: 
+A  c    1
+B  d    5
+dtype: int64
+
+s.loc[(["A", "B"], ["c", "d"])]  # tuple of lists
+Out[50]: 
+A  c    1
+   d    2
+B  c    4
+   d    5
+dtype: int64
+```
+
+
+
+
+
+#### 多重索引切片 IndexSlice
+
+```PYTHON
+idx = pd.IndexSlice
+data.loc[['A_注册年限'], idx[:,['apply_n'],:]]
+
+# 创建一个dataframe
+midx = pd.MultiIndex.from_product([['A0','A1'], ['B0','B1','B2','B3']])
+columns = ['foo', 'bar']
+dfmi = pd.DataFrame(np.arange(16).reshape((len(midx), len(columns))),
+                    index=midx, columns=columns)
+
+# 利用IndexSlice来选切片 
+idx = pd.IndexSlice
+dfmi.loc[idx[:, 'B0':'B1'], :]
+           foo  bar
+    A0 B0    0    1
+       B1    2    3
+    A1 B0    8    9
+       B1   10   11
+```
+
+
+
 #### 修改多层索引名称
 
 ```PYTHON
@@ -3616,6 +3738,32 @@ df = pd.DataFrame(
 # 'AAA'列如果大于5，赋值某列(新列)为high，否则赋值low
 df['logic'] = np.where(df['AAA']>5, 'high', 'low')
 
+```
+
+
+
+#### pandas 写 if-then
+
+> numpy.**select**(*condlist*, *choicelist*, *default=0*)[[source\]](https://github.com/numpy/numpy/blob/v1.22.0/numpy/lib/function_base.py#L741-L839)[¶](https://numpy.org/doc/stable/reference/generated/numpy.select.html#numpy.select)
+>
+> Return an array drawn from elements in choicelist, depending on conditions.
+>
+> - Parameters
+>
+>     **condlist**list of bool ndarraysThe list of conditions which determine from which array in *choicelist* the output elements are taken. When multiple conditions are satisfied, the first one encountered in *condlist* is used.**choicelist**list of ndarraysThe list of arrays from which the output elements are taken. It has to be of the same length as *condlist*.**default**scalar, optionalThe element inserted in *output* when all conditions evaluate to False.
+>
+> - Returns
+>
+>     **output**ndarrayThe output at position m is the m-th element of the array in *choicelist* where the m-th element of the corresponding array in *condlist* is True.
+
+
+
+```PYTHON
+df[“RESULT”] = 0
+df[“RESULT”] = np.select(condlist=[df[‘COL_1’] <= df[‘COL_2’],
+               df[‘COL_2’] == 0],
+               choicelist=[1,-1],
+               default=0)
 ```
 
 

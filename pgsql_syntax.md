@@ -2,6 +2,10 @@
 
 
 
+
+
+# pgsql
+
 ## sql 原理
 
 ####   [cursor  游标解释]( https://www.cnblogs.com/zhouziyuan/p/10155612.html )
@@ -458,4 +462,17 @@ where
 #### [EXPLIAN](https://www.yiibai.com/manual/postgresql/using-explain.html)
 
 
+
+# sparksql
+
+#### 生成时间序列
+
+```SPARQL
+from pyspark.sql.functions import sequence, to_date, explode, col
+
+spark.sql("SELECT sequence(to_date('2018-01-01'), to_date('2018-03-01'), interval 1 month) as date")
+
+spark.sql("SELECT sequence(to_date('2018-01-01'), to_date('2018-03-01'), interval 1 month) as date").withColumn("date", explode(col("date"))
+
+```
 
