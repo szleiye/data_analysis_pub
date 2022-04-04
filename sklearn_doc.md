@@ -828,6 +828,60 @@ dot -Tpng iris_tree.dot -o iris_tree.png
 
 
 
+#### 用widget 实时调整参数并返回树
+
+```PYTHON
+pip install ipywidgets
+jupyter nbextension enable --py widgetsnbextension
+```
+
+
+
+```PYTHON
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn import tree
+from sklearn.datasets import load_wine
+from IPython.display import SVG
+from graphviz import Source
+from IPython.display import display                               
+from ipywidgets import interactive
+# load dataset
+data = load_wine()
+# feature matrix
+X = data.data
+# target vector
+y = data.target
+# class labels
+labels = data.feature_names
+def plot_tree(crit, split, depth, min_split, min_leaf=0.2):
+estimator = DecisionTreeClassifier(random_state = 0 
+      , criterion = crit
+      , splitter = split
+      , max_depth = depth
+      , min_samples_split=min_split
+      , min_samples_leaf=min_leaf)
+    estimator.fit(X, y)
+graph = Source(tree.export_graphviz(estimator
+      , out_file=None
+      , feature_names=labels
+      , class_names=['0', '1', '2']
+      , filled = True))
+   
+    display(SVG(graph.pipe(format='svg')))
+return estimator
+inter=interactive(plot_tree 
+   , crit = ["gini", "entropy"]
+   , split = ["best", "random"]
+   , depth=[1,2,3,4]
+   , min_split=(0.1,1)
+   , min_leaf=(0.1,0.5))
+display(inter)
+```
+
+<img src="C:\Users\lei\Documents\Github\data_analysis_pub\assets\sklearn_doc\1345004-20180908224306707-1381345626.png" alt="img" style="zoom:50%;" />
+
+
+
 ## 随机森林 
 
 #### [分类森林 sklearn.ensemble.RandomForestClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn-ensemble-randomforestclassifier)
