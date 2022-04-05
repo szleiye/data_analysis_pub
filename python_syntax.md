@@ -2765,6 +2765,10 @@ data.to_csv(sys.stdout,index=False,cols=['a','b','c'])
 
 
 
+### Excel 操作
+
+[pandas教程](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html?highlight=excelfile#reading-excel-files)
+
 #### 写入excel中不同的sheet pd.ExcelWriter
 
 ```PYTHON
@@ -2775,6 +2779,62 @@ data.to_csv(sys.stdout,index=False,cols=['a','b','c'])
 ```
 
 
+
+#### [写入excel并设置格式](https://pandas.pydata.org/pandas-docs/stable/user_guide/io.html?highlight=excelfile#style-and-formatting)
+
+The look and feel of Excel worksheets created from pandas can be modified using the following parameters on the `DataFrame`’s `to_excel` method.
+
+- `float_format` : Format string for floating point numbers (default `None`).
+- `freeze_panes` : A tuple of two integers representing the bottommost row and rightmost column to freeze. Each of these parameters is one-based, so (1, 1) will freeze the first row and first column (default `None`)
+
+
+
+#### [xlsxwriter](https://xlsxwriter.readthedocs.io/working_with_pandas.html)
+
+
+
+
+
+
+
+#### `ExcelFile` class 方便同时操作多个sheet
+
+To facilitate working with multiple sheets from the same file, the `ExcelFile` class can be used to wrap the file and can be passed into `read_excel` There will be a performance benefit for reading multiple sheets as the file is read into memory only once.
+
+```PYTHON
+xlsx = pd.ExcelFile("path_to_file.xls")
+df = pd.read_excel(xlsx, "Sheet1")
+```
+
+```python
+with pd.ExcelFile("path_to_file.xls") as xls:
+    df1 = pd.read_excel(xls, "Sheet1")
+    df2 = pd.read_excel(xls, "Sheet2")
+    
+```
+
+
+
+```python
+# 不同的参数
+data = {}
+# For when Sheet1's format differs from Sheet2
+with pd.ExcelFile("path_to_file.xls") as xls:
+    data["Sheet1"] = pd.read_excel(xls, "Sheet1", index_col=None, na_values=["NA"])
+    data["Sheet2"] = pd.read_excel(xls, "Sheet2", index_col=1)
+    
+# 相同的参数  
+# using the ExcelFile class
+data = {}
+with pd.ExcelFile("path_to_file.xls") as xls:
+    data["Sheet1"] = pd.read_excel(xls, "Sheet1", index_col=None, na_values=["NA"])
+    data["Sheet2"] = pd.read_excel(xls, "Sheet2", index_col=None, na_values=["NA"])
+
+# equivalent using the read_excel function
+data = pd.read_excel(
+    "path_to_file.xls", ["Sheet1", "Sheet2"], index_col=None, na_values=["NA"]
+)
+```
 
 
 
@@ -4589,6 +4649,30 @@ Python标准库主要会用到以下模块：
 
 
 
+#### 时间的三种存在方式：时间对象，时间字符串，时间戳
+
+```PYTHON
+
+(1)字符串转datetime：
+>>> string = '2014-01-08 11:59:58'
+>>> time1 = datetime.datetime.strptime(string,'%Y-%m-%d %H:%M:%S')
+>>> print time1
+2014-01-08 11:59:58
+
+(2)datetime转字符串：
+>>> time1_str = datetime.datetime.strftime(time1,'%Y-%m-%d %H:%M:%S')
+>>> time1_str
+'2014-01-08 11:59:58'
+
+(3)时间戳转时间对象：
+
+>>>time1 = time.localtime()
+
+>>>time1_str = datetime.datetime.fromtimestamp(time1)
+```
+
+
+
 #### 取当前时间 datetime.now()
 
 ```python
@@ -4597,6 +4681,162 @@ now = datetime.now()  # 取当前时间
 
 now.year, now.month, now.day
 ```
+
+
+
+#### 常用时间节点获取
+
+```PYTHON
+import datatime
+date = datetime.datetime.now()
+
+# 当天：
+newdate = datetime.datetime.now()
+condtions = {‘datadate’: newdate}
+
+# 昨天：
+newdate = date + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 本周初：
+newdate = now - datetime.timedelta(days=now.weekday())
+condtions = {‘datadate’: newdate}
+
+# 本周末：
+newdate = now + datetime.timedelta(days=6 - now.weekday())
+condtions = {‘datadate’: newdate}
+
+# 上周初：
+newdate = now - datetime.timedelta(days=now.weekday() + 7)
+condtions = {‘datadate’: newdate}
+
+# 上周末：
+newdate = now - datetime.timedelta(days=now.weekday() + 1)
+condtions = {‘datadate’: newdate}
+
+# 月初：
+newdate = date.replace(day=1)
+condtions = {‘datadate’: newdate}
+
+# 月末：
+year = date.year
+month = date.month
+a, b = calendar.monthrange(year, month) # a,b——weekday的第一天是星期几（0-6对应星期一到星期天）和这个月的所有天数
+newdate = datetime.datetime(year=year, month=month, day=b) # 构造本月月末datetime
+condtions = {‘datadate’: newdate}
+
+# 上月初：
+date_now = date.replace(day=1)
+date_now = date_now + datetime.timedelta(days=-1)
+newdate = datetime.datetime(date_now.year, date_now.month, 1)
+condtions = {‘datadate’: newdate}
+
+# 上月末：
+date_now = date.replace(day=1)
+newdate = date_now + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 年初：
+newdate = date.replace(month=1, day=1)
+condtions = {‘datadate’: newdate}
+
+# 年末：
+newdate = date.replace(month=12, day=31)
+condtions = {‘datadate’: newdate}
+
+# 去年初：
+newdate = date.replace(month=1, day=1)
+newdate = newdate + datetime.timedelta(days=-1)
+newdate = datetime.datetime(newdate.year, 1, 1)
+condtions = {‘datadate’: newdate}
+
+# 去年末：
+newdate = date.replace(month=1, day=1)
+newdate = newdate + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 季初：
+month = (date.month - 1) - (date.month - 1) % 3 + 1
+newdate = datetime.datetime(date.year, month, 1)
+condtions = {‘datadate’: newdate}
+
+# 季末：
+month = (date.month - 1) - (date.month - 1) % 3 + 1
+if month == 10:
+　　newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+else:
+　　newdate = datetime.datetime(date.year, month + 3, 1) + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 上季初：
+month = (date.month - 1) - (date.month - 1) % 3 + 1
+newdate = datetime.datetime(date.year, month, 1)
+newdate = newdate + datetime.timedelta(days=-1)
+newdate = datetime.datetime(newdate.year, newdate.month - 2, 1)
+condtions = {‘datadate’: newdate}
+
+# 上季末：
+month = (date.month - 1) - (date.month - 1) % 3 + 1 # 10
+newdate = datetime.datetime(date.year, month, 1)
+newdate = newdate + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 半年初：
+month = (date.month - 1) - (date.month - 1) % 6 + 1
+newdate = datetime.datetime(date.year, month, 1)
+condtions = {‘datadate’: newdate}
+
+# 半年末：
+month = (date.month - 1) - (date.month - 1) % 6 + 1
+if month == 7:
+　　newdate = datetime.datetime(date.year + 1, 1, 1) + datetime.timedelta(days=-1)
+else:
+　　newdate = datetime.datetime(date.year, month + 6, 1) + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 上个半年初：
+month = (date.month - 1) - (date.month - 1) % 6 + 1
+newdate = datetime.datetime(date.year, month, 1)
+newdate = newdate + datetime.timedelta(days=-1)
+newdate = datetime.datetime(newdate.year, newdate.month - 5, 1)
+condtions = {‘datadate’: newdate}
+
+# 上个半年末：
+month = (date.month - 1) - (date.month - 1) % 6 + 1
+newdate = datetime.datetime(date.year, month, 1)
+newdate = newdate + datetime.timedelta(days=-1)
+condtions = {‘datadate’: newdate}
+
+# 月平均值：
+ms_newdate = date.replace(day=1)
+me_newdate = date
+new_date = (ms_newdate, me_newdate)
+
+# 季平均值：
+month = (date.month - 1) - (date.month - 1) % 3 + 1
+ss_newdate = datetime.datetime(date.year, month, 1)
+se_newdate = date
+new_date = (ss_newdate, se_newdate)
+
+# 半年平均值：
+month = (date.month - 1) - (date.month - 1) % 6 + 1
+hs_newdate = datetime.datetime(date.year, month, 1)
+he_newdate = date
+new_date = (hs_newdate, he_newdate)
+
+# 年均值：
+ys_newdate = date.replace(month=1, day=1)
+ye_newdate = date
+new_date = (ys_newdate, ye_newdate)
+
+if condtions:
+　　query_res = Entry.objects.filter(**condtions).filter().exclude()
+if new_date:
+　　query_res = Entry.objects.filter(datadate__range=new_date).filter().exclude()
+
+```
+
+
 
 
 
