@@ -3249,6 +3249,14 @@ gp3.columns = ["_".join(x) for x in gp3.columns.ravel()]
 df[:5].swaplevel(0, 1, axis=0)
 ```
 
+#### 多重索引制定索引顺序 df.reorder_levels()
+
+```PYTHON
+df.reorder_levels([3,2,1,0])
+```
+
+
+
 #### 多重索引层级重新排序 df.reorder_levels()
 
 ```PYTHON
@@ -3270,6 +3278,12 @@ s.sort_index(level='L1')
 ```PYTHON
 dfmi.reindex(['two','one'], level = 0, axis=1)
 dfmi.reindex(['second','first'], level = 1, axis=1)
+```
+
+#### 多重索引行列转换 DataFrame.stack(level=- 1, *dropna=True***)**
+
+```PYTHON
+DataFrame.stack(level=[- 1], dropna=True)
 ```
 
 
@@ -3978,7 +3992,102 @@ df.where()的反向操作，满足条件的值要被替换掉
 # 例子1: 取符合 a<b<c 的行 
 df[(df.a < df.b) & (df.b < df.c)]  # 传统方法
 
+# query 方法
+df.query('(a < b) & (b < c)')
 
+# index指索引的值
+df
+Out[227]: 
+   b  c
+0  3  1
+1  3  0
+2  5  6
+3  5  2
+4  7  4
+5  0  1
+6  2  5
+7  0  1
+8  6  0
+9  7  9
+
+df.query('index < b < c')
+Out[228]: 
+   b  c
+2  5  6
+
+
+# 多重索引，用 索引名 query
+
+df
+Out[240]: 
+                   0         1
+color food                    
+red   ham   0.194889 -0.381994
+      ham   0.318587  2.089075
+      eggs -0.728293 -0.090255
+green eggs -0.748199  1.318931
+      eggs -2.029766  0.792652
+      ham   0.461007 -0.542749
+      ham  -0.305384 -0.479195
+      eggs  0.095031 -0.270099
+      eggs -0.707140 -0.773882
+      eggs  0.229453  0.304418
+
+df.query('color == "red"')
+Out[241]: 
+                   0         1
+color food                    
+red   ham   0.194889 -0.381994
+      ham   0.318587  2.089075
+      eggs -0.728293 -0.090255
+
+        
+# 多重索引，无索引名 query
+df
+Out[243]: 
+                   0         1
+red   ham   0.194889 -0.381994
+      ham   0.318587  2.089075
+      eggs -0.728293 -0.090255
+green eggs -0.748199  1.318931
+      eggs -2.029766  0.792652
+      ham   0.461007 -0.542749
+      ham  -0.305384 -0.479195
+      eggs  0.095031 -0.270099
+      eggs -0.707140 -0.773882
+      eggs  0.229453  0.304418
+
+df.query('ilevel_0 == "red"')
+Out[244]: 
+                 0         1
+red ham   0.194889 -0.381994
+    ham   0.318587  2.089075
+    eggs -0.728293 -0.090255
+    
+# in 和 not in
+df.query('a in b')
+# How you'd do it in pure Python
+df[df['a'].isin(df['b'])]
+
+
+df.query('a not in b')
+# pure Python
+df[~df['a'].isin(df['b'])]
+
+# Comparing a list of values to a column using ==/!= works similarly to in/not in.
+df.query('b == ["a", "b", "c"]')
+df[df['b'].isin(["a", "b", "c"])]
+
+# "非"
+df.query('~bools')
+df.query('not bools')
+df.query('not bools') == df[~df['bools']]
+
+# 在query中用变量
+# You can refer to variables in the environment by prefixing them with an ‘@’ character like @a + b.
+
+# 非标准名称用``
+# `a a` + b
 ```
 
 
@@ -5508,11 +5617,166 @@ Out[114]: (1,2)
 ```
 
 
-### 画多个子图
+### 提高代码可读性的写法
+
+[pandas 在使用时语法感觉很乱，有什么学习的技巧吗？](https://www.zhihu.com/question/289788451/answer/2495499460?utm_source=pocket_mylist)
+
+#### df.pipe()  
 
 ```PYTHON
+# 举个例子，每次分析工作完成后，把琐碎的数据清理工作以如下形式放在数据导入后的下一步
+dtype_mapping = {'a':np.float32, 'b':np.uint8, 'c':np.float64, 'd':np.int64, 'e':str}
+df_cleaned = (df
+  .pipe(pd.DataFrame.sort_index, ascending=False) #按索引排序
+  .pipe(pd.DataFrame.fillna,value=0, method='ffill') #缺失值处理
+  .pipe(pd.DataFrame.astype, dtype_mapping) #数据类型变换
+  .pipe(pd.DataFrame.clip, lower= -0.05, upper=0.05) #极端值处理
+)  
+# 也可以包装成一个函数
+def clean_data(df):
+  ...#上面的pipe操作
+  return df_cleaned
 
 ```
+
+#### df.assign()
+
+```PYTHON
+# 官方doc的例子
+df = pd.DataFrame(data=25 + 5 * np.random.randn(10), columns=["temp_c"])
+df.assign(temp_f=lambda x: x['temp_c'] * 9 / 5 + 32,
+          temp_k=lambda x: (x['temp_f'] +  459.67) * 5 / 9)
+)
+
+
+# 以下代码效果相同，都增加了 a、b、c、d 三列
+# 字典解包
+df.assign(**{'a': range(10),
+           'b': 2,
+           'c': lambda d: d.a + 1,
+           'd': df.col+2})
+
+# 关键字参数
+df.assign(a=range(10),
+          b=2,
+          c=lambda d: d.a + 1,
+          d=df.col+2)
+
+# 单行编写
+df.assign(a=range(10)).assign(b=2).assign(c=lambda d: d.a+1, d=df.col+2)
+
+# 分行编写
+(
+    df.assign(a=range(10))
+    .assign(b=2)
+    .assign(c=lambda d: d.a+1, d=df.col+2)
+)
+
+df = pd.DataFrame({'temp_c': [17.0, 25.0]},
+                  index=['Portland', 'Berkeley'])
+df
+'''
+          temp_c
+Portland    17.0
+Berkeley    25.0
+'''
+
+
+# 其中值是可调用的，根据df进行计算
+df.assign(temp_f=lambda x: x.temp_c * 9 / 5 + 32)
+'''
+          temp_c  temp_f
+Portland    17.0    62.6
+Berkeley    25.0    77.0
+'''
+
+
+# 可以通过直接引用现有序列或序列来实现相同的行为
+df.assign(temp_f=df['temp_c'] * 9 / 5 + 32)
+'''
+          temp_c  temp_f
+Portland    17.0    62.6
+Berkeley    25.0    77.0
+'''
+
+
+# 可以在同一分配中创建多个列，其中一个列依赖于同一分配中定义的另一个列
+df.assign(temp_f=lambda x: x['temp_c'] * 9 / 5 + 32,
+          temp_k=lambda x: (x['temp_f'] +  459.67) * 5 / 9)
+          temp_c  temp_f  temp_k
+'''
+Portland    17.0    62.6  290.15
+Berkeley    25.0    77.0  298.15
+'''
+```
+
+#### df.query()
+
+```PYTHON
+df = pd.DataFrame(data=np.random.randn(10,3), columns=list("abc"))
+
+#用query
+df.query("(a>0 and b<0.05) or c>b")
+#普通方法
+df.loc[((df['a']>0) & (df['b']<0.05))| (df['c']>df['b'])]
+
+```
+
+#### df.transform() 避免单独生成汇总结果后再merge会原df
+
+```PYTHON
+作者：peter
+链接：https://www.zhihu.com/question/289788451/answer/2495499460
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+#方法一、用agg汇总后再merge到原表
+df_wrong = df_cls_price.reset_index() #把datetime64的索引变成列，列名为Date
+df_wrong['month'] = df_wrong['Date'].apply(lambda x: str(x)[:7]) # 生成month辅助列
+
+#得到月均价
+df_wrong_avgprice = (df_wrong
+ .groupby('month')
+ .mean()
+)
+
+#把月均价df和原来数据合并
+df_wrong_joined = df_wrong.join(df_wrong_avgprice,on='month', rsuffix='_1m_mean')
+
+#计算
+df_wrong_joined.assign(
+    GOOG_demean = df_wrong_joined['GOOG'] - df_wrong_joined['GOOG_1m_mean'],
+    TSLA_demean = df_wrong_joined['TSLA'] - df_wrong_joined['TSLA_1m_mean'],
+    NFLX_demean = df_wrong_joined['NFLX'] - df_wrong_joined['NFLX_1m_mean'],
+    KO_demean = df_wrong_joined['KO'] - df_wrong_joined['KO_1m_mean']
+)
+```
+
+
+
+```PYTHON
+#方法二、用grouper加transform
+df_cls_price.groupby(pd.Grouper(freq='1M')).transform(lambda x: x- x.mean())
+
+#方法三、熟练用户会直接用‘-’，更快更简洁
+df_cls_price - df_cls_price.groupby(pd.Grouper(freq='1M')).transform(np.mean)
+
+
+```
+
+
+
+#### np.select() 完成case when
+
+```PYTHON
+df.assign(c=np.select([(df.a>0.5)&(df.b<0.9), df.a<0, df.b<0],
+                      [df.b, 0, -np.inf], 
+                      default=np.nan))
+
+
+```
+
+
 
 # matplotlib画图
 
