@@ -3615,7 +3615,7 @@ data = (
        )
 ```
 
-#### 全局修改dataframe数据 [pandas.DataFrame.replace](<https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html>) 
+#### 替换数据[pandas.DataFrame.replace](<https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.replace.html>) 
 
 ```PYTHON
 # overall replace
@@ -3634,20 +3634,7 @@ df.loc[df.sex == 'Male', 'sex'] = 'Leone'
 data[np.abs(data) > 3] = np.sign(data)*3
 ```
 
-#### interval 属性
-
-| Attributes                               |                                          |
-| ---------------------------------------- | ---------------------------------------- |
-| [`closed`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed.html#pandas.Interval.closed) | Whether the interval is closed on the left-side, right-side, both or neither |
-| [`closed_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_left.html#pandas.Interval.closed_left) | Check if the interval is closed on the left side. |
-| [`closed_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_right.html#pandas.Interval.closed_right) | Check if the interval is closed on the right side. |
-| [`is_empty`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.is_empty.html#pandas.Interval.is_empty) | Indicates if an interval is empty, meaning it contains no points. |
-| [`left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.left.html#pandas.Interval.left) | Left bound for the interval              |
-| [`length`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.length.html#pandas.Interval.length) | Return the length of the Interval        |
-| [`mid`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.mid.html#pandas.Interval.mid) | Return the midpoint of the Interval      |
-| [`open_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_left.html#pandas.Interval.open_left) | Check if the interval is open on the left side. |
-| [`open_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_right.html#pandas.Interval.open_right) | Check if the interval is open on the right side. |
-| [`right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.right.html#pandas.Interval.right) | Right bound for the interval             |
+### 变量分段 cut
 
 #### 连续变量分段 pd.cut()
 
@@ -3680,6 +3667,23 @@ cats = pd.qcut(data, 4)
 # 设置自定义的分位数
 pd.qcut(data, [0, 0.1, 0.5, 0.9, 1])
 ```
+
+#### interval 属性
+
+| Attributes                                                   |                                                              |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| [`closed`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed.html#pandas.Interval.closed) | Whether the interval is closed on the left-side, right-side, both or neither |
+| [`closed_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_left.html#pandas.Interval.closed_left) | Check if the interval is closed on the left side.            |
+| [`closed_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.closed_right.html#pandas.Interval.closed_right) | Check if the interval is closed on the right side.           |
+| [`is_empty`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.is_empty.html#pandas.Interval.is_empty) | Indicates if an interval is empty, meaning it contains no points. |
+| [`left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.left.html#pandas.Interval.left) | Left bound for the interval                                  |
+| [`length`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.length.html#pandas.Interval.length) | Return the length of the Interval                            |
+| [`mid`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.mid.html#pandas.Interval.mid) | Return the midpoint of the Interval                          |
+| [`open_left`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_left.html#pandas.Interval.open_left) | Check if the interval is open on the left side.              |
+| [`open_right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.open_right.html#pandas.Interval.open_right) | Check if the interval is open on the right side.             |
+| [`right`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Interval.right.html#pandas.Interval.right) | Right bound for the interval                                 |
+
+### 
 
 #### 取分段后的左边区间/右边区间
 
@@ -3733,6 +3737,99 @@ df.shift(periods=3, freq="D")
 
 df.shift(periods=3, freq="infer")
 ```
+
+
+
+#### 列转行[pandas.melt](https://pandas.pydata.org/docs/reference/api/pandas.melt.html)
+
+`pandas.melt(frame, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None, ignore_index=True)`
+
+- frame：要处理的数据框DataFrame。
+- id_vars：表示**不需要被转换**的列名
+- value_vars：表示**需要转换**的列名，如果剩下的列全部都需要进行转换，则不必写
+- var_name和value_name：自定义设置对应的列名，相当于是取新的列名
+- igonore_index：是否忽略原列名，默认是True，就是忽略了原索引名，重新生成0,1,2,3,4....的自然索引
+- col_level：如果列是多层索引列MultiIndex，则使用此参数；这个参数少用
+
+```PYTHON
+index = pd.MultiIndex.from_tuples([("person", "A"), ("person", "B")])
+
+cheese = pd.DataFrame(
+    {
+        "first": ["John", "Mary"],
+        "last": ["Doe", "Bo"],
+        "height": [5.5, 6.0],
+        "weight": [130, 150],
+    },
+    index=index,
+)
+
+
+cheese
+Out[52]: 
+         first last  height  weight
+person A  John  Doe     5.5     130
+       B  Mary   Bo     6.0     150
+
+cheese.melt(id_vars=["first", "last"])
+Out[53]: 
+  first last variable  value
+0  John  Doe   height    5.5
+1  Mary   Bo   height    6.0
+2  John  Doe   weight  130.0
+3  Mary   Bo   weight  150.0
+
+cheese.melt(id_vars=["first", "last"], ignore_index=False)
+Out[54]: 
+         first last variable  value
+person A  John  Doe   height    5.5
+       B  Mary   Bo   height    6.0
+       A  John  Doe   weight  130.0
+       B  Mary   Bo   weight  150.0
+```
+
+
+
+### data reshape专题
+
+#### [pandas.DataFrame.pivot](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html#pandas.DataFrame.pivot)
+
+Parameters
+
+- **index**str or object or a list of str, optional
+
+    Column to use to make new frame’s index. If None, uses existing index.*Changed in version 1.1.0:* Also accept list of index names.
+
+- **columns**str or object or a list of str
+
+    Column to use to make new frame’s columns.*Changed in version 1.1.0:* Also accept list of columns names.
+
+- **values**str, object or a list of the previous, optional
+
+    Column(s) to use for populating new frame’s values. If not specified, all remaining columns will be used and the result will have hierarchically indexed columns.
+
+Returns
+
+- DataFrame
+
+    Returns reshaped DataFrame.
+
+Raises
+
+- ValueError:
+
+    When there are any index, columns combinations with multiple values. DataFrame.pivot_table when you need to aggregate.
+
+
+
+#### [转置列表元素 pandas.DataFrame.explode](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.explode.html#pandas.DataFrame.explode)
+
+`explode(column, ignore_index=False)`
+
+> This routine will explode list-likes including lists, tuples, sets, Series, and np.ndarray. The result dtype of the subset rows will be object. Scalars will be returned unchanged, and empty list-likes will result in a np.nan for that row. In addition, the ordering of rows in the output will be non-deterministic when exploding sets.
+
+- column：待爆炸的元素
+- ignore_index：是否忽略索引；默认是False，保持原来的索引
 
 
 
