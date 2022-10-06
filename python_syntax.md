@@ -3094,6 +3094,163 @@ Int64Index([2, 1], dtype='int64')
 
 ### 多重索引
 
+#### 直接创建多重索引
+
+````PYTHON
+arrays = [
+    np.array(["bar", "bar", "baz", "baz", "foo", "foo", "qux", "qux"]),
+    np.array(["one", "two", "one", "two", "one", "two", "one", "two"]),
+]
+
+
+s = pd.Series(np.random.randn(8), index=arrays)
+
+s
+Out[14]: 
+bar  one   -0.861849
+     two   -2.104569
+baz  one   -0.494929
+     two    1.071804
+foo  one    0.721555
+     two   -0.706771
+qux  one   -1.039575
+     two    0.271860
+dtype: float64
+
+df = pd.DataFrame(np.random.randn(8, 4), index=arrays)
+
+df
+Out[16]: 
+                0         1         2         3
+bar one -0.424972  0.567020  0.276232 -1.087401
+    two -0.673690  0.113648 -1.478427  0.524988
+baz one  0.404705  0.577046 -1.715002 -1.039268
+    two -0.370647 -1.157892 -1.344312  0.844885
+foo one  1.075770 -0.109050  1.643563 -1.469388
+    two  0.357021 -0.674600 -1.776904 -0.968914
+qux one -1.294524  0.413738  0.276662 -0.472035
+    two -0.013960 -0.362543 -0.006154 -0.923061
+````
+
+
+
+#### 创建索引的方法
+
+[`MultiIndex.from_arrays(arrays, sortorder=None, names=_NoDefault.no_default)`](https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_arrays.html#pandas.MultiIndex.from_arrays)
+
+Convert list of arrays to MultiIndex.
+
+```PYTHON
+arrays = [[1, 1, 2, 2], ['red', 'blue', 'red', 'blue']]
+pd.MultiIndex.from_arrays(arrays, names=('number', 'color'))
+MultiIndex([(1,  'red'),
+            (1, 'blue'),
+            (2,  'red'),
+            (2, 'blue')],
+           names=['number', 'color'])
+```
+
+
+
+[`MultiIndex.from_tuples(tuples, sortorder=None, names=None)`](https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_tuples.html#pandas.MultiIndex.from_tuples)
+
+Convert list of tuples to MultiIndex.
+
+```PYTHON
+tuples = [(1, 'red'), (1, 'blue'),
+          (2, 'red'), (2, 'blue')]
+pd.MultiIndex.from_tuples(tuples, names=('number', 'color'))
+MultiIndex([(1,  'red'),
+            (1, 'blue'),
+            (2,  'red'),
+            (2, 'blue')],
+           names=['number', 'color'])
+```
+
+
+
+[`MultiIndex.from_product(iterables, sortorder=None, names=_NoDefault.no_default)`](https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_product.html#pandas.MultiIndex.from_product)
+
+Make a MultiIndex from cartesian product of iterables.
+
+```PYTHON
+numbers = [0, 1, 2]
+colors = ['green', 'purple']
+pd.MultiIndex.from_product([numbers, colors],
+                           names=['number', 'color'])
+MultiIndex([(0,  'green'),
+            (0, 'purple'),
+            (1,  'green'),
+            (1, 'purple'),
+            (2,  'green'),
+            (2, 'purple')],
+           names=['number', 'color'])
+```
+
+
+
+[`MultiIndex.from_frame(df, sortorder=None, names=None)`](https://pandas.pydata.org/docs/reference/api/pandas.MultiIndex.from_frame.html#pandas.MultiIndex.from_frame)
+
+Make a MultiIndex from a DataFrame.
+
+
+
+#### 重命名索引名称 `df.rename_axis`
+
+> Parameters
+> 
+> - **mapper**scalar, list-like, optional
+> 
+>     Value to set the axis name attribute.
+> 
+> - **index, columns**scalar, list-like, dict-like or function, optional
+> 
+>     A scalar, list-like, dict-like or functions transformations to apply to that axis’ values. Note that the `columns` parameter is not allowed if the object is a Series. This parameter only apply for DataFrame type objects.Use either `mapper` and `axis` to specify the axis to target with `mapper`, or `index` and/or `columns`.
+> 
+> - **axis**{0 or ‘index’, 1 or ‘columns’}, default 0
+> 
+>     The axis to rename. For Series this parameter is unused and defaults to 0.
+> 
+> - **copy**bool, default True
+> 
+>     Also copy underlying data.
+> 
+> - **inplace**bool, default False
+> 
+>     Modifies the object directly, instead of creating a new Series or DataFrame.
+> 
+> Returns
+> 
+> - Series, DataFrame, or None
+> 
+>     The same type as the caller or None if `inplace=True`.
+
+```PYTHON
+# ex1 直接赋值
+df.rename_axis(index=["abc", "def"])
+Out[94]: 
+                 0         1
+abc  def                    
+one  y    1.519970 -0.493662
+     x    0.600178  0.274230
+zero y    0.132885 -0.023688
+     x    2.410179  1.450520
+    
+    
+    
+# ex2 映射新的名称
+df.rename_axis(index={'type': 'class'})
+limbs          num_legs  num_arms
+class  name
+mammal dog            4         0
+       cat            4         0
+       monkey         2         2
+```
+
+
+
+
+
 #### 设置索引显示方式 `multi_sparse`
 
 “Sparsify” MultiIndex display (don’t display repeated elements in outer levels within groups)
@@ -3101,6 +3258,30 @@ Int64Index([2, 1], dtype='int64')
 ```python
 pd.options.display.multi_sparse = False
 pd.get_option("display.multi_sparse")
+```
+
+#### 索引切片内list和tuple的区别
+
+```
+s = pd.Series(
+   ....:     [1, 2, 3, 4, 5, 6],
+   ....:     index=pd.MultiIndex.from_product([["A", "B"], ["c", "d", "e"]]),
+   ....: )
+   ....: 
+
+In [49]: s.loc[[("A", "c"), ("B", "d")]]  # list of tuples
+Out[49]: 
+A  c    1
+B  d    5
+dtype: int64
+
+In [50]: s.loc[(["A", "B"], ["c", "d"])]  # tuple of lists
+Out[50]: 
+A  c    1
+   d    2
+B  c    4
+   d    5
+dtype: int64
 ```
 
 
@@ -3190,9 +3371,60 @@ dtype: int64
 
 
 
+#### 多重索引切片 基础 .loc
+
+只能直接指定具体的行/列，在行/列索引内部不能用`:`方法，不太方便
+
+```PYTHON
+# ex1
+df.loc[("bar", "two"), "A"]
+Out[42]: 0.8052440253863785
+    
+    
+# ex2    
+df.loc[[("bar", "two"), ("qux", "one")]]
+Out[47]: 
+                     A         B         C
+first second                              
+bar   two     0.805244  0.813850  1.607920
+qux   one    -1.170299  1.130127  0.974466    
+
+# ex3
+df.loc[("baz", "two"):("qux", "one")]
+```
+
+
+
+用`axis`指定切片的方向，类似idx的效果
+
+```PYTHON
+dfmi.loc(axis=0)[:, :, ["C1", "C3"]]
+Out[63]: 
+lvl0           a         b     
+lvl1         bar  foo  bah  foo
+A0 B0 C1 D0    9    8   11   10
+         D1   13   12   15   14
+      C3 D0   25   24   27   26
+         D1   29   28   31   30
+   B1 C1 D0   41   40   43   42
+...          ...  ...  ...  ...
+A3 B0 C3 D1  221  220  223  222
+   B1 C1 D0  233  232  235  234
+         D1  237  236  239  238
+      C3 D0  249  248  251  250
+         D1  253  252  255  254
+
+```
+
+
+
 
 
 #### 多重索引切片 IndexSlice
+
+`dfmi.loc[idx[:, :, ["C1", "C3"]], idx[:, "foo"]]`
+
+行和列分别都要用切片的话，就要用两个idx，逗号分开
 
 ```PYTHON
 idx = pd.IndexSlice
@@ -3212,6 +3444,97 @@ dfmi.loc[idx[:, 'B0':'B1'], :]
        B1    2    3
     A1 B0    8    9
        B1   10   11
+        
+```
+
+
+
+```PYTHON
+# 例子2
+df
+Out[16]: 
+                0         1         2         3
+bar one -0.424972  0.567020  0.276232 -1.087401
+    two -0.673690  0.113648 -1.478427  0.524988
+baz one  0.404705  0.577046 -1.715002 -1.039268
+    two -0.370647 -1.157892 -1.344312  0.844885
+foo one  1.075770 -0.109050  1.643563 -1.469388
+    two  0.357021 -0.674600 -1.776904 -0.968914
+qux one -1.294524  0.413738  0.276662 -0.472035
+    two -0.013960 -0.362543 -0.006154 -0.923061
+    
+    
+dfmi.loc[idx[:, :, ["C1", "C3"]], idx[:, "foo"]]
+Out[60]: 
+lvl0           a    b
+lvl1         foo  foo
+A0 B0 C1 D0    8   10
+         D1   12   14
+      C3 D0   24   26
+         D1   28   30
+   B1 C1 D0   40   42
+...          ...  ...
+A3 B0 C3 D1  220  222
+   B1 C1 D0  232  234
+         D1  236  238
+      C3 D0  248  250
+         D1  252  254    
+```
+
+
+
+#### 用`reindex`和`align` 沿索引broadcast值
+
+```PYTHON
+midx = pd.MultiIndex(
+    levels=[["zero", "one"], ["x", "y"]], codes=[[1, 1, 0, 0], [1, 0, 1, 0]]
+)
+
+
+df = pd.DataFrame(np.random.randn(4, 2), index=midx)
+
+df
+Out[82]: 
+               0         1
+one  y  1.519970 -0.493662
+     x  0.600178  0.274230
+zero y  0.132885 -0.023688
+     x  2.410179  1.450520
+
+df2 = df.groupby(level=0).mean()
+
+df2
+Out[84]: 
+             0         1
+one   1.060074 -0.109716
+zero  1.271532  0.713416
+
+df2.reindex(df.index, level=0)
+Out[85]: 
+               0         1
+one  y  1.060074 -0.109716
+     x  1.060074 -0.109716
+zero y  1.271532  0.713416
+     x  1.271532  0.713416
+
+# aligning
+df_aligned, df2_aligned = df.align(df2, level=0)
+
+df_aligned
+Out[87]: 
+               0         1
+one  y  1.519970 -0.493662
+     x  0.600178  0.274230
+zero y  0.132885 -0.023688
+     x  2.410179  1.450520
+
+df2_aligned
+Out[88]: 
+               0         1
+one  y  1.060074 -0.109716
+     x  1.060074 -0.109716
+zero y  1.271532  0.713416
+     x  1.271532  0.713416
 ```
 
 
@@ -3253,14 +3576,6 @@ df[:5].swaplevel(0, 1, axis=0)
 
 ```PYTHON
 df.reorder_levels([3,2,1,0])
-```
-
-
-
-#### 多重索引层级重新排序 df.reorder_levels()
-
-```PYTHON
-df[:5].reorder_levels([1, 0], axis=0)
 ```
 
 #### 多重索引排序 df.sort_index()
@@ -3634,6 +3949,8 @@ df.loc[df.sex == 'Male', 'sex'] = 'Leone'
 data[np.abs(data) > 3] = np.sign(data)*3
 ```
 
+
+
 ### 变量分段 cut
 
 #### 连续变量分段 pd.cut()
@@ -3740,6 +4057,194 @@ df.shift(periods=3, freq="infer")
 
 
 
+### data reshape专题
+
+#### 透视表 pivot_table
+
+`DataFrame.pivot_table(values=None, index=None, columns=None, aggfunc='mean', fill_value=None, margins=False, dropna=True, margins_name='All', observed=False, sort=True)`
+
+pivot table可以实现groupby的功能，并且添加分项合计
+
+`values`：待聚合的列的名称，默认聚合所有数值列
+
+`aggfun`: 传入自定义的聚合函数
+
+`margin`:是否统计分项合计
+
+`fill_value`: NA值填充
+
+
+
+> Parameters
+>
+> - **values**column to aggregate, optional
+>
+>     
+>
+> - **index**column, Grouper, array, or list of the previous
+>
+>     If an array is passed, it must be the same length as the data. The list can contain any of the other types (except list). Keys to group by on the pivot table index. If an array is passed, it is being used as the same manner as column values.
+>
+> - **columns**column, Grouper, array, or list of the previous
+>
+>     If an array is passed, it must be the same length as the data. The list can contain any of the other types (except list). Keys to group by on the pivot table column. If an array is passed, it is being used as the same manner as column values.
+>
+> - **aggfunc**function, list of functions, dict, default numpy.mean
+>
+>     If list of functions passed, the resulting pivot table will have hierarchical columns whose top level are the function names (inferred from the function objects themselves) If dict is passed, the key is column to aggregate and value is function or list of functions.
+>
+> - **fill_value**scalar, default None
+>
+>     Value to replace missing values with (in the resulting pivot table, after aggregation).
+>
+> - **margins**bool, default False
+>
+>     Add all row / columns (e.g. for subtotal / grand totals).
+>
+> - **dropna**bool, default True
+>
+>     Do not include columns whose entries are all NaN. If True, rows with a NaN value in any column will be omitted before computing margins.
+>
+> - **margins_name**str, default ‘All’
+>
+>     Name of the row / column that will contain the totals when margins is True.
+>
+> - **observed**bool, default False
+>
+>     This only applies if any of the groupers are Categoricals. If True: only show observed values for categorical groupers. If False: show all values for categorical groupers.*Changed in version 0.25.0.*
+>
+> - **sort**bool, default True
+>
+>     Specifies if the result should be sorted.*New in version 1.3.0.*
+>
+> Returns
+>
+> - DataFrame
+>
+>     An Excel style pivot table.
+
+
+
+```PYTHON
+# 默认是计算分组平均数
+tips.pivot_table(['tip_pct', 'size'], rows=['sex', 'day'], cols='smoker', margins=True)
+
+#如果要使用其他函数，可以传入给aggfunc选项
+tips.pivot_table('tip_pct', rows=['sex', 'smoker'], cols='day', aggfunc=len, margins=True)
+```
+
+
+
+```python
+# 分组合计
+table = df.pivot_table(
+    index=["A", "B"],
+    columns="C",
+    values=["D", "E"],
+    margins=True,
+    aggfunc=np.std
+)
+
+
+table
+Out[75]: 
+                D                             E                    
+C             bar       foo       All       bar       foo       All
+A     B                                                            
+one   A  1.804346  1.210272  1.569879  0.179483  0.418374  0.858005
+      B  0.690376  1.353355  0.898998  1.083825  0.968138  1.101401
+      C  0.273641  0.418926  0.771139  1.689271  0.446140  1.422136
+three A  0.794212       NaN  0.794212  2.049040       NaN  2.049040
+      B       NaN  0.363548  0.363548       NaN  1.625237  1.625237
+      C  3.915454       NaN  3.915454  1.035215       NaN  1.035215
+two   A       NaN  0.442998  0.442998       NaN  0.447104  0.447104
+      B  0.202765       NaN  0.202765  0.560757       NaN  0.560757
+      C       NaN  1.819408  1.819408       NaN  0.650439  0.650439
+All      1.556686  0.952552  1.246608  1.250924  0.899904  1.059389
+```
+
+
+
+#### [交叉表 crosstab](https://pandas.pydata.org/docs/reference/api/pandas.crosstab.html#pandas.crosstab)
+
+```
+pandas.crosstab(index, columns, values=None, rownames=None, colnames=None, aggfunc=None, margins=False, margins_name='All', dropna=True, normalize=False)
+```
+
+> Parameters
+> 
+> - **index**array-like, Series, or list of arrays/Series
+> 
+>     Values to group by in the rows.
+> 
+> - **columns**array-like, Series, or list of arrays/Series
+> 
+>     Values to group by in the columns.
+> 
+> - **values**array-like, optional
+> 
+>     Array of values to aggregate according to the factors. Requires aggfunc be specified.
+> 
+> - **rownames**sequence, default None
+> 
+>     If passed, must match number of row arrays passed.
+> 
+> - **colnames**sequence, default None
+> 
+>     If passed, must match number of column arrays passed.
+> 
+> - **aggfunc**function, optional
+> 
+>     If specified, requires values be specified as well.
+> 
+> - **margins**bool, default False
+> 
+>     Add row/column margins (subtotals).
+> 
+> - **margins_name**str, default ‘All’
+> 
+>     Name of the row/column that will contain the totals when margins is True.
+> 
+> - **dropna**bool, default True
+> 
+>     Do not include columns whose entries are all NaN.
+> 
+> - **normalize**bool, {‘all’, ‘index’, ‘columns’}, or {0,1}, default False
+> 
+>     Normalize by dividing all values by the sum of values.If passed ‘all’ or True, will normalize over all values.If passed ‘index’ will normalize over each row.If passed ‘columns’ will normalize over each column.If margins is True, will also normalize margin values.
+> 
+> Returns
+> 
+> - DataFrame
+> 
+>     Cross tabulation of the data.
+
+
+
+计算分组频率
+
+```PYTHON
+pd.crosstab(data.Gender, data.Handedness, margins=True)
+
+pd.crosstab([tips.time, tips.day], tips.smoker, margins=True)
+```
+
+#### 分组算占比 
+
+```PYTHON
+bins = np.array([0, 1, 10, 100, 1000])
+labels = pd.cut(fec_mrbo.contb_receipt_amt, bins) # 设置分组标签
+
+grouped = fec_mrbo.groupby(['cand_nm', labels]) # 设置分组
+
+grouped.size().unstack(0) # 统计分组数量
+
+bucker_sums = grouped.contb_receipt_amt.sum().unstack(0) # 统计分组金额
+normed_sums = bucker_sums.div(bucket_sums.sum(axis=1), axis=0)
+```
+
+## 
+
 #### 列转行[pandas.melt](https://pandas.pydata.org/docs/reference/api/pandas.melt.html)
 
 `pandas.melt(frame, id_vars=None, value_vars=None, var_name=None, value_name='value', col_level=None, ignore_index=True)`
@@ -3790,7 +4295,7 @@ person A  John  Doe   height    5.5
 
 
 
-### data reshape专题
+### 
 
 #### [pandas.DataFrame.pivot](https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.pivot.html#pandas.DataFrame.pivot)
 
@@ -3832,6 +4337,8 @@ Raises
 - ignore_index：是否忽略索引；默认是False，保持原来的索引
 
 
+
+### ------
 
 
 
@@ -4191,6 +4698,45 @@ df.query('not bools') == df[~df['bools']]
 
 ## 数据操作-聚合和分组运算
 
+#### 取groupby之后的切片
+
+```PYTHON
+grouped = df.groupby(["A"])
+
+grouped_C = grouped["C"]
+
+grouped_D = grouped["D"]
+```
+
+#### groupby后各组循环
+
+```PYTHON
+grouped = df.groupby('A')
+
+for name, group in grouped:
+    print(name)
+    print(group)
+
+bar
+     A      B         C         D
+1  bar    one  0.254161  1.511763
+3  bar  three  0.215897 -0.990582
+5  bar    two -0.077118  1.211526
+foo
+     A      B         C         D
+0  foo    one -0.575247  1.346061
+2  foo    two -1.143704  1.627081
+4  foo    two  1.193555 -0.441652
+6  foo    one -0.408530  0.268520
+7  foo  three -0.862495  0.024580
+```
+
+
+
+### 聚合函数
+
+`DataFrameGroupBy.aggregate(func=None, *args, engine=None, engine_kwargs=None, **kwargs)`
+
 #### 经过优化的聚合函数
 
 ```PYTHON
@@ -4228,27 +4774,108 @@ df.query('not bools') == df[~df['bools']]
 | `min()`      | Compute min of group values                |
 | `max()`      | Compute max of group values                |
 
-#### 调用自己得聚合函数 DataFrame.GroupBy.agg  
+#### lambda + groupby 隐函数实现特殊分组
 
 ```PYTHON
-# count(distinct **)
-df.groupby('tip').agg({'sex': pd.Series.nunique})
-
-# 一次传入多个agg function
-train_data[['Title','Survived']].groupby('Title', as_index=False).agg({np.mean, np.sum, 'size','count'})
-grouped['C'].agg([np.sum, np.mean, np.std])
+get_suit = laambda card: card[-1] # 取card字段的最后一个字母，用来等下分组
+    
+#1 
+deck.groupby(get_suit).apply(draw, n=2)
+#2 不把分组键作为索引
+deck.groupby(get_suit, group_keys=False).apply(draw, n=2)
 ```
 
+#### 控制类别变量是否全部显示 `observed`选项
+
+```
+pd.Series([1, 1, 1]).groupby(
+   .....:     pd.Categorical(["a", "a", "a"], categories=["a", "b"]), observed=False
+   .....: ).count()
+   .....: 
+```
+
+#### apply 对groupby调用自定义函数
+
+apply将待处理的对象拆分成多个片段，然后对各片段调用传入的函数，最后将各片段组合。
+
 ```PYTHON
+# 定义一个函数
+def top(df, n=5, column='tip_pct'):
+    return df.sort_index(by=column)[-n:]
+
+# apply的函数能够接受其他参数或关键字，将关键字放在函数名后面
+tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill')
+```
+
+#### 
+
+#### 同时传入多个聚合函数 DataFrame.GroupBy.agg  
+
+```PYTHON
+# 一次传入多个agg function
+grouped[["C", "D"]].agg([np.sum, np.mean, np.std])
+Out[84]: 
+            C                             D                    
+          sum      mean       std       sum      mean       std
+A                                                              
+bar  0.392940  0.130980  0.181231  1.732707  0.577569  1.366330
+foo -1.796421 -0.359284  0.912265  2.824590  0.564918  0.884785
+
+# 重命名
+(
+    grouped["C"]
+    .agg([np.sum, np.mean, np.std])
+    .rename(columns={"sum": "foo", "mean": "bar", "std": "baz"})
+)
+
+Out[85]: 
+          foo       bar       baz
+A                                
+bar  0.392940  0.130980  0.181231
+foo -1.796421 -0.359284  0.912265
+
+# 同时传入多个lambda函数
+grouped["C"].agg([lambda x: x.max() - x.min(), lambda x: x.median() - x.mean()])
+Out[88]: 
+     <lambda_0>  <lambda_1>
+A                          
+bar    0.331279    0.084917
+foo    2.337259   -0.215962
+
+
+```
+
+```python
 # 用groupby统计好坏客户数
 print(dt_modelSample.query("rid == rid").groupby(['enter_month']).apply(
     lambda grp:pd.Series({"Good":grp.query("ifBad == False").shape[0],
                           "Bad" : grp.query("ifBad == True").shape[0],
                           "BadRate": grp.query("ifBad == True").shape[0]/grp.shape[0]})
 ))
+
+# 一种更易读的方法
+def GrowUp(x):
+    avg_weight = sum(x[x["size"] == "S"].weight * 1.5)
+    avg_weight += sum(x[x["size"] == "M"].weight * 1.25)
+    avg_weight += sum(x[x["size"] == "L"].weight)
+    avg_weight /= len(x)
+    return pd.Series(["L", avg_weight, True], index=["size", "weight", "adult"])
+
+
+expected_df = gb.apply(GrowUp)
+
+expected_df
+Out[111]: 
+       size   weight  adult
+animal                     
+cat       L  12.4375   True
+dog       L  20.0000   True
+fish      L   1.2500   True
 ```
 
-#### 传入多个聚合函数并指定列名
+
+
+#### 传入多个聚合函数并指定列名 pd.NamedAgg
 
 传入一个由(name, function)元组组成得列表，则各元组第一个元素会用作DataFrame的列名
 
@@ -4306,6 +4933,58 @@ grouped.agg({'tip_pct':['min', 'max', 'mean', 'std'],
                    lambda x: x.median() - x.mean()])
 ```
 
+
+
+#### 自定义 describe function
+
+```
+from functools import partial
+
+In [180]: q_25 = partial(pd.Series.quantile, q=0.25)
+
+In [181]: q_25.__name__ = "25%"
+
+In [182]: q_75 = partial(pd.Series.quantile, q=0.75)
+
+In [183]: q_75.__name__ = "75%"
+
+In [184]: tsdf.agg(["count", "mean", "std", "min", q_25, "median", q_75, "max"])
+Out[184]: 
+               A         B         C
+count   6.000000  6.000000  6.000000
+mean    0.505601 -0.300647  0.262585
+std     1.103362  0.887508  0.606860
+min    -0.749892 -1.333363 -0.757304
+25%    -0.239885 -0.979600  0.128907
+median  0.303398 -0.278111  0.225365
+75%     1.146791  0.151678  0.722709
+max     2.169758  1.004194  0.896839
+```
+
+
+
+####  将聚合结果应用到dataframe上  grouped.transform()
+
+transform中传入的函数只能是：
+
+1. 产生可以广播的标量值，如np.mean
+2. 或者是一个相同大小的结果数组
+
+```PYTHON
+# 简便的方法
+key = ['one', 'two', 'one', 'two', 'one']
+people.groupby(key).mean()  # 分组求平均值的结果
+people.groupby(key).transform(np.mean)  # 效果是将聚合后平均值的结果合并到原来的dataframe中
+
+# 填充缺失值
+df['B'] = df.groupby(['A']).transform(lambda x : x.fillna(x.mean))
+
+# 笨拙的方法，先groupby然后用merge合并
+
+```
+
+#### 
+
 #### 无索引方式返回聚合函数 as_index=False
 
 ```PYTHON
@@ -4349,47 +5028,12 @@ data.groupby(group_key).apply(fill_mean)
 
 
 
-####  将聚合结果应用到dataframe上  grouped.transform()
-
-transform中传入的函数只能是：
-
-1. 产生可以广播的标量值，如np.mean
-2. 或者是一个相同大小的结果数组
-
-```PYTHON
-# 简便的方法
-key = ['one', 'two', 'one', 'two', 'one']
-people.groupby(key).mean()  # 分组求平均值的结果
-people.groupby(key).transform(np.mean)  # 效果是将聚合后平均值的结果合并到原来的dataframe中
-
-# 填充缺失值
-df['B'] = df.groupby(['A']).transform(lambda x : x.fillna(x.mean))
-
-# 笨拙的方法，先groupby然后用merge合并
-
-```
-
-#### apply 对groupby调用自定义函数
-
-apply将待处理的对象拆分成多个片段，然后对各片段调用传入的函数，最后将各片段组合。
-
-```PYTHON
-# 定义一个函数
-def top(df, n=5, column='tip_pct'):
-    return df.sort_index(by=column)[-n:]
-
-# apply的函数能够接受其他参数或关键字，将关键字放在函数名后面
-tips.groupby(['smoker', 'day']).apply(top, n=1, column='total_bill')
-```
-
 #### filter
 
 ```PYTHON
 sf = pd.Series([1, 1, 2, 3, 3, 3])
 sf.groupby(sf).filter(lambda x: x.sum() > 2)
 ```
-
-
 
 #### 分组保留前n行
 
@@ -4403,15 +5047,40 @@ var_values.groupby('var_name').head(20)
 train_df[["SibSp", "Survived"]].groupby(['SibSp'], as_index=False).mean().sort_values(by='Survived', ascending=False)
 ```
 
-#### lambda + groupby 隐函数实现特殊分组
+#### 分组保留每组最大值的行
 
-```PYTHON
-get_suit = laambda card: card[-1] # 取card字段的最后一个字母，用来等下分组
-    
-#1 
-deck.groupby(get_suit).apply(draw, n=2)
-#2 不把分组键作为索引
-deck.groupby(get_suit, group_keys=False).apply(draw, n=2)
+```python
+df = pd.DataFrame(
+    {
+        "host": ["other", "other", "that", "this", "this"],
+        "service": ["mail", "web", "mail", "mail", "web"],
+        "no": [1, 2, 1, 2, 1],
+    }
+).set_index(["host", "service"])
+
+
+mask = df.groupby(level=0).agg("idxmax")
+
+df_count = df.loc[mask["no"]].reset_index()
+
+df_count
+Out[142]: 
+    host service  no
+0  other     web   2
+1   that    mail   1
+2   this    mail   2
+```
+
+#### 取每组第n个数 `nth()`
+
+```
+# nth(-1) is the same as g.last()
+In [204]: g.nth(-1, dropna="any")  # NaNs denote group exhausted when using dropna
+Out[204]: 
+     B
+A     
+1  4.0
+5  6.0
 ```
 
 #### 分组执行线性回归
@@ -4426,73 +5095,6 @@ def regress(data, yvar, xvars):
     return result.params
 
 by_year.apply(regress,'AAPL', ['SPX'])
-```
-
-#### 透视表 pivot_table
-
-pivot table可以实现groupby的功能，并且添加分项合计
-
-`values`：待聚合的列的名称，默认聚合所有数值列
-
-`aggfun`: 传入自定义的聚合函数
-
-`margin`:是否统计分项合计
-
-`fill_value`: NA值填充
-
-```PYTHON
-# 默认是计算分组平均数
-tips.pivot_table(['tip_pct', 'size'], rows=['sex', 'day'], cols='smoker', margins=True)
-
-#如果要使用其他函数，可以传入给aggfunc选项
-tips.pivot_table('tip_pct', rows=['sex', 'smoker'], cols='day', aggfunc=len, margins=True)
-```
-
-#### [调整pivot_table显示层级](https://blog.csdn.net/weixin_40161254/article/details/91450574 )
-
-需要将pivot_table结果转换如下：
-
-<center>
-    <img src="assets/20190611172741248.png" alt="原始" style="zoom: 27%;" />
-    <img src="assets/20190611172843612.png" alt="目标" style="zoom: 29%;" />
-</center>
-
-```PYTHON
-df1 = df.pivot_table(index=["user_id"], columns=["question_id"], values=["score","duration"]).fillna(0)
-print(df1)
-
-# 通过设置多重索引来调整显示的层级
-c1=df['question_id'].drop_duplicates()
-c2=['score','duration']
-index=pd.MultiIndex.from_product([c1,c2])
-df1.columns=index
-print(df1)
-```
-
-
-
-#### 交叉表 crosstab
-
-计算分组频率
-
-```PYTHON
-pd.crosstab(data.Gender, data.Handedness, margins=True)
-
-pd.crosstab([tips.time, tips.day], tips.smoker, margins=True)
-```
-
-#### 分组算占比 
-
-```PYTHON
-bins = np.array([0, 1, 10, 100, 1000])
-labels = pd.cut(fec_mrbo.contb_receipt_amt, bins) # 设置分组标签
-
-grouped = fec_mrbo.groupby(['cand_nm', labels]) # 设置分组
-
-grouped.size().unstack(0) # 统计分组数量
-
-bucker_sums = grouped.contb_receipt_amt.sum().unstack(0) # 统计分组金额
-normed_sums = bucker_sums.div(bucket_sums.sum(axis=1), axis=0)
 ```
 
 ## 数据操作-连接
@@ -5278,7 +5880,7 @@ DataFrame.sort_values(self, by, axis=0, ascending=True, inplace=False, kind='qui
 
 
 
-### [**用pandas实现sql功能**](https://blog.csdn.net/zeng_xiangt/article/details/81519535)
+## [**用pandas实现sql功能**](https://blog.csdn.net/zeng_xiangt/article/details/81519535)
 
 more at <https://codeburst.io/how-to-rewrite-your-sql-queries-in-pandas-and-more-149d341fc53e>
 
@@ -5718,7 +6320,7 @@ Out[114]: (1,2)
 
 [pandas 在使用时语法感觉很乱，有什么学习的技巧吗？](https://www.zhihu.com/question/289788451/answer/2495499460?utm_source=pocket_mylist)
 
-#### df.pipe()  
+#### df.pipe()   链式操作
 
 ```PYTHON
 # 举个例子，每次分析工作完成后，把琐碎的数据清理工作以如下形式放在数据导入后的下一步
@@ -5735,6 +6337,91 @@ def clean_data(df):
   return df_cleaned
 
 ```
+
+
+
+```PYthon
+def extract_city_name(df):
+    """
+    Chicago, IL -> Chicago for city_name column
+    """
+    df["city_name"] = df["city_and_code"].str.split(",").str.get(0)
+    return df
+
+
+def add_country_name(df, country_name=None):
+    """
+    Chicago -> Chicago-US for city_name column
+    """
+    col = "city_name"
+    df["city_and_country"] = df[col] + country_name
+    return df
+
+
+df_p = pd.DataFrame({"city_and_code": ["Chicago, IL"]})
+
+# 不使用链式操作
+add_country_name(extract_city_name(df_p), country_name="US")
+Out[145]: 
+  city_and_code city_name city_and_country
+0   Chicago, IL   Chicago        ChicagoUS
+
+# 使用pipe链式
+df_p.pipe(extract_city_name).pipe(add_country_name, country_name="US")
+Out[146]: 
+  city_and_code city_name city_and_country
+0   Chicago, IL   Chicago        ChicagoUS
+
+# 如果df不是第一个参数，给(函数，df对应参数名)
+import statsmodels.formula.api as sm
+
+bb = pd.read_csv("data/baseball.csv", index_col="id")
+
+(
+    bb.query("h > 0")
+    .assign(ln_h=lambda df: np.log(df.h))
+    .pipe((sm.ols, "data"), "hr ~ ln_h + year + g + C(lg)")
+    .fit()
+    .summary()
+)
+
+Out[149]: 
+<class 'statsmodels.iolib.summary.Summary'>
+"""
+                            OLS Regression Results                            
+==============================================================================
+Dep. Variable:                     hr   R-squared:                       0.685
+Model:                            OLS   Adj. R-squared:                  0.665
+Method:                 Least Squares   F-statistic:                     34.28
+Date:                Mon, 19 Sep 2022   Prob (F-statistic):           3.48e-15
+Time:                        12:06:27   Log-Likelihood:                -205.92
+No. Observations:                  68   AIC:                             421.8
+Df Residuals:                      63   BIC:                             432.9
+Df Model:                           4                                         
+Covariance Type:            nonrobust                                         
+===============================================================================
+                  coef    std err          t      P>|t|      [0.025      0.975]
+-------------------------------------------------------------------------------
+Intercept   -8484.7720   4664.146     -1.819      0.074   -1.78e+04     835.780
+C(lg)[T.NL]    -2.2736      1.325     -1.716      0.091      -4.922       0.375
+ln_h           -1.3542      0.875     -1.547      0.127      -3.103       0.395
+year            4.2277      2.324      1.819      0.074      -0.417       8.872
+g               0.1841      0.029      6.258      0.000       0.125       0.243
+==============================================================================
+Omnibus:                       10.875   Durbin-Watson:                   1.999
+Prob(Omnibus):                  0.004   Jarque-Bera (JB):               17.298
+Skew:                           0.537   Prob(JB):                     0.000175
+Kurtosis:                       5.225   Cond. No.                     1.49e+07
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.
+[2] The condition number is large, 1.49e+07. This might indicate that there are
+strong multicollinearity or other numerical problems.
+"""
+```
+
+
 
 #### df.assign()
 
